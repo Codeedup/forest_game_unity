@@ -33,4 +33,8 @@ You should have working code for most of the relevant concepts, and can refer ba
 - Open in Unity `6000.2.8f1` or later (earlier Unity 6.2 versions might work, but that's not guaranteed)
 - Commit and push your work back to your Git repository
 
+## STRETCH GOAL
+
+(*) At the moment, falling objects turn black when they are created and red when they collide with anything. Make them turn black only when they collide with each other, and red when they collide with the platform.
+
 We'll do a peer-review of progress via each other's Git repositories in Session 6.
