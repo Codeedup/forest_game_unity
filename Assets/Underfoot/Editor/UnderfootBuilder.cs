@@ -33,6 +33,9 @@ namespace Underfoot.Editor
             Colour("Leaf", "B5964E"); Colour("LeafVein", "D9BE72"); Colour("Stone", "929386");
             Colour("Wood", "A97A4C"); Colour("Interior", "C39B6C"); Colour("Rug", "986B63");
             Colour("Amber", "FFCE79", true); Colour("Pollen", "F5DDA1", true);
+            Colour("BarkCrease", "513D31"); Colour("Lichen", "A5B48A"); Colour("RoseCap", "BB817B");
+            Colour("LeafSpeckle", "9C8547"); Colour("Dew", "C5DCC3");
+            palette["Dew"].SetFloat("_Glossiness", .9f);
             cone = SaveMesh("Pointed", Lathe(new[] { new Vector2(.5f, 0), new Vector2(.42f, .18f), new Vector2(.22f, .7f), new Vector2(0, 1) }, 12));
             cloak = SaveMesh("Cloak", Lathe(new[] { new Vector2(.31f, 0), new Vector2(.28f, .15f), new Vector2(.14f, .8f), new Vector2(.12f, 1) }, 14));
             cap = SaveMesh("MushroomCap", Lathe(new[] { new Vector2(0, 0), new Vector2(.5f, .08f), new Vector2(.45f, .3f), new Vector2(.28f, .49f), new Vector2(0, .58f) }, 14));
@@ -102,9 +105,11 @@ namespace Underfoot.Editor
             var details = systems.AddComponent<UnderfootDetails>();
             details.player = player; details.leaf = leaf;
             details.mossPrefab = MossPrefab(); details.tinyMushroomPrefab = TinyPrefab(); details.leafVeinsPrefab = VeinPrefab();
+            details.bellcapPrefab = BellcapPrefab(); details.barkPrefab = BarkPrefab(); details.fineLeafPrefab = FineLeafPrefab();
             var demo = systems.AddComponent<UnderfootDemo>();
             demo.player = player; demo.details = details; demo.gnome = gnome; demo.home = home;
-            UI(demo);
+            var soundscape = Soundscape(systems, demo);
+            UI(demo, soundscape);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
             var scenes = new List<EditorBuildSettingsScene> { new EditorBuildSettingsScene(ScenePath, true) };
@@ -200,6 +205,9 @@ namespace Underfoot.Editor
                 float h = 3 + (i % 3) * .6f;
                 Shape("Woodland trunk", PrimitiveType.Cylinder, parent, p + Vector3.up * h / 2, new Vector3(.35f, h / 2, .42f), "Bark", true);
                 Shape("Woodland crown", PrimitiveType.Sphere, parent, p + Vector3.up * h, new Vector3(2.8f, 2.1f, 2.7f), i % 2 == 0 ? "Sage" : "DarkMoss");
+                for (int j = 0; j < 3; j++)
+                    Shape("Soft forest understorey", PrimitiveType.Sphere, parent, p + new Vector3((j - 1) * .42f, .23f + j * .06f, -.15f),
+                        new Vector3(.92f, .62f, .85f), j % 2 == 0 ? "DarkMoss" : "Moss");
             }
         }
 
@@ -317,11 +325,164 @@ namespace Underfoot.Editor
             for (int i = 0; i < 7; i++)
             {
                 float z = -.39f + i * .13f;
-                float width = Mathf.Sin((i + 1) / 8f * Mathf.PI) * .37f;
                 foreach (int side in new[] { -1, 1 })
-                    Tube("Raised vein", root, new Vector3(0, .035f, z), new Vector3(side * width, .065f, z + .15f), .003f, "LeafVein");
+                    for (int j = 0; j < 5; j++)
+                    {
+                        float a = j / 5f, b = (j + 1) / 5f;
+                        Tube("Raised branching vein", root, LeafPoint(z + a * .14f, side * a * .92f) + Vector3.up * .002f,
+                            LeafPoint(z + b * .14f, side * b * .92f) + Vector3.up * .002f, .0025f * (1 - a * .5f), "LeafVein");
+                    }
             }
+            CombineDecoration(root, "LeafPrimaryVeins");
             return SavePrefab(root, "LeafVeins");
+        }
+
+        static Vector3 LeafPoint(float z, float transverse)
+        {
+            float ring = Mathf.Clamp01((z + .58f) / 1.18f) * 12;
+            int a = Mathf.Min(11, Mathf.FloorToInt(ring)), b = a + 1;
+            float w0 = Mathf.Sin(a / 12f * Mathf.PI) * (.38f + a % 2 * .055f);
+            float w1 = Mathf.Sin(b / 12f * Mathf.PI) * (.38f + b % 2 * .055f);
+            return new Vector3(Mathf.Lerp(w0, w1, ring - a) * transverse,
+                Mathf.Lerp(.019f, .055f + Mathf.Abs(z) * .07f, Mathf.Abs(transverse)), z);
+        }
+
+        static GameObject FineLeafPrefab()
+        {
+            var root = Group("Leaf lace and morning dew");
+            for (int i = 0; i < 7; i++)
+                foreach (int side in new[] { -1, 1 })
+                    for (int branch = 1; branch < 4; branch++)
+                    {
+                        float z = -.39f + i * .13f, f = branch * .2f;
+                        Vector3 from = LeafPoint(z + f * .14f, side * f * .92f) + Vector3.up * .003f;
+                        Vector3 to = LeafPoint(z + f * .14f + .057f, side * (f + .16f) * .92f) + Vector3.up * .003f;
+                        Tube("Fine vein fork", root, from, to, .0008f, "LeafVein");
+                    }
+            for (int i = 0; i < 14; i++)
+            {
+                Vector3 p = LeafPoint(-.38f + (i % 7) * .13f, i < 7 ? -.73f : .68f);
+                Shape("Leaf freckle", PrimitiveType.Sphere, root, p + Vector3.up * .001f, new Vector3(.01f, .001f, .017f), "LeafSpeckle");
+                if (i % 2 == 0)
+                    Shape("Morning dew bead", PrimitiveType.Sphere, root, p + Vector3.up * .0055f, new Vector3(.011f, .008f, .011f), "Dew");
+            }
+            CombineDecoration(root, "LeafLace");
+            return SavePrefab(root, "LeafLaceAndDew");
+        }
+
+        static GameObject BellcapPrefab()
+        {
+            var root = Group("Hidden rose bellcap colony");
+            for (int i = 0; i < 5; i++)
+            {
+                Vector3 p = new Vector3(Mathf.Sin(i * 2.4f) * .022f, 0, Mathf.Cos(i * 2.4f) * .022f);
+                float h = .024f + (i % 3) * .014f, radius = .014f + i % 2 * .006f;
+                Tube("Curved cream stalk", root, p, p + new Vector3(.003f, h, 0), .0025f, "Cream");
+                MeshShape("Rose bell", cap, root, p + new Vector3(.003f, h, 0), new Vector3(radius * 2, radius * 2, radius * 2), "RoseCap");
+                for (int j = 0; j < 8; j++)
+                {
+                    float a = j * Mathf.PI / 4;
+                    Vector3 edge = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * radius * .86f;
+                    Tube("Visible cream gill", root, p + new Vector3(.003f, h + .001f, 0), p + new Vector3(.003f, h + .001f, 0) + edge, .0006f, "Cream");
+                }
+                Shape("Tiny cap fleck", PrimitiveType.Sphere, root, p + new Vector3(.003f, h + radius * 1.12f, 0), new Vector3(.0035f, .001f, .004f), "Cream");
+            }
+            CombineDecoration(root, "Bellcaps");
+            return SavePrefab(root, "HiddenBellcaps");
+        }
+
+        static GameObject BarkPrefab()
+        {
+            var root = Group("Hidden bark grain, lichen and shelf fungi");
+            foreach (int side in new[] { -1, 1 })
+            {
+                Vector3[] points = { new Vector3(side * .35f, .52f, 1.92f), new Vector3(side * .34f, .36f, 1.4f), new Vector3(side * .45f, .20f, 1.05f), new Vector3(side * .9f, .10f, .65f), new Vector3(side * 1.65f, .015f, .4f) };
+                float[] radii = { .24f, .18f, .13f, .075f, .008f };
+                var rotations = new Quaternion[points.Length];
+                for (int j = 0; j < points.Length; j++)
+                    rotations[j] = Quaternion.FromToRotation(Vector3.up, (points[Mathf.Min(j + 1, 4)] - points[Mathf.Max(0, j - 1)]).normalized);
+                for (int line = 0; line < 12; line++)
+                {
+                    float a = line * Mathf.PI / 6;
+                    Vector3 radial = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
+                    for (int j = 0; j < 4; j++)
+                    {
+                        Vector3 from = points[j] + rotations[j] * radial * (radii[j] + .0018f);
+                        Vector3 to = points[j + 1] + rotations[j + 1] * radial * (radii[j + 1] + .0018f);
+                        Tube("Long flowing bark ridge", root, from, to, .0026f - j * .0005f, line % 3 == 0 ? "BarkCrease" : "BarkLight");
+                    }
+                }
+            }
+            Physics.SyncTransforms();
+            // Raycast onto the authored wood so the fine details conform to its real silhouette.
+            for (int i = 0; i < 34; i++)
+            {
+                float x = -.65f + (i % 9) * .17f, y = .20f + (i / 9) * .20f;
+                if (!Physics.Raycast(new Vector3(x, y, .42f), Vector3.forward, out var hit, 2.4f)) continue;
+                if (!hit.transform.IsChildOf(GameObject.Find("Old guardian tree and roots").transform)) continue;
+                Vector3 p = hit.point + hit.normal * .002f;
+                var patch = Shape("Scalloped sage lichen", PrimitiveType.Sphere, root, p, new Vector3(.027f, .003f, .036f), "Lichen");
+                patch.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                if (i % 3 == 0)
+                {
+                    Shape("Cream shelf fungus rim", PrimitiveType.Sphere, root, p + hit.normal * .012f, new Vector3(.055f, .008f, .033f), "Cream");
+                    Shape("Ochre shelf fungus", PrimitiveType.Sphere, root, p + hit.normal * .012f + Vector3.up * .004f, new Vector3(.052f, .009f, .032f), "Hat");
+                }
+                if (i % 4 == 0)
+                {
+                    Vector3 tangent = Vector3.Cross(hit.normal, Vector3.right).normalized;
+                    Vector3 cross = Vector3.Cross(hit.normal, tangent).normalized;
+                    for (int j = 0; j < 12; j++)
+                    {
+                        float a = j * Mathf.PI / 6, b = (j + 1) * Mathf.PI / 6;
+                        Tube("Oval bark knot", root, p + tangent * Mathf.Cos(a) * .038f + cross * Mathf.Sin(a) * .014f,
+                            p + tangent * Mathf.Cos(b) * .038f + cross * Mathf.Sin(b) * .014f, .0016f, "BarkCrease");
+                    }
+                }
+            }
+            CombineDecoration(root, "BarkRelief");
+            return SavePrefab(root, "BarkRelief");
+        }
+
+        static void CombineDecoration(Transform root, string prefix)
+        {
+            var groups = new Dictionary<Material, List<CombineInstance>>();
+            var pieces = root.GetComponentsInChildren<MeshFilter>();
+            foreach (var piece in pieces)
+            {
+                var material = piece.GetComponent<MeshRenderer>().sharedMaterial;
+                if (!groups.ContainsKey(material)) groups[material] = new List<CombineInstance>();
+                groups[material].Add(new CombineInstance { mesh = piece.sharedMesh, transform = root.worldToLocalMatrix * piece.transform.localToWorldMatrix });
+            }
+            foreach (var pair in groups)
+            {
+                string materialName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(pair.Key));
+                var mesh = new Mesh { indexFormat = IndexFormat.UInt32 };
+                mesh.CombineMeshes(pair.Value.ToArray());
+                MeshShape(materialName + " detail", SaveMesh(prefix + materialName, mesh), root, Vector3.zero, Vector3.one, materialName);
+            }
+            foreach (var piece in pieces) Object.DestroyImmediate(piece.gameObject);
+        }
+
+        static UnderfootSoundscape Soundscape(GameObject systems, UnderfootDemo demo)
+        {
+            var sound = systems.AddComponent<UnderfootSoundscape>(); sound.demo = demo;
+            sound.music = AudioTrack(systems.transform, "Original meadow tune", "Underfoot_Meadow_Waltz.wav");
+            sound.forest = AudioTrack(systems.transform, "Wind, leaf rustle and woodland birds", "Underfoot_Forest_Air.wav");
+            return sound;
+        }
+        static AudioSource AudioTrack(Transform parent, string name, string file)
+        {
+            string path = Root + "/Audio/" + file;
+            var importer = AssetImporter.GetAtPath(path) as AudioImporter;
+            if (!importer) throw new System.IO.FileNotFoundException("Generate the original audio with Tools/generate_underfoot_audio.py first.", path);
+            var settings = importer.defaultSampleSettings;
+            settings.loadType = AudioClipLoadType.DecompressOnLoad; settings.compressionFormat = AudioCompressionFormat.Vorbis; settings.quality = .75f;
+            importer.defaultSampleSettings = settings; importer.forceToMono = false; importer.SaveAndReimport();
+            var audio = new GameObject(name, typeof(AudioSource)).GetComponent<AudioSource>();
+            audio.transform.SetParent(parent, false); audio.clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            audio.playOnAwake = false; audio.loop = true; audio.spatialBlend = 0; audio.volume = 0;
+            return audio;
         }
         static GameObject SeedPrefab()
         {
@@ -340,7 +501,7 @@ namespace Underfoot.Editor
             return SavePrefab(root, "GoldenSeed");
         }
 
-        static void UI(UnderfootDemo demo)
+        static void UI(UnderfootDemo demo, UnderfootSoundscape soundscape)
         {
             var canvas = new GameObject("Underfoot interface", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
@@ -349,6 +510,11 @@ namespace Underfoot.Editor
             var top = Panel("Title card", canvas.transform, new Vector2(24, -22), new Vector2(390, 105), new Vector2(0, 1));
             TextAt("UNDERFOOT", top, new Vector2(20, -10), new Vector2(350, 44), 32, "F0DEB0");
             TextAt("A small wanderer. A world worth noticing.", top, new Vector2(21, -57), new Vector2(350, 30), 16, "D0D6B7");
+            var soundButton = Panel("Sound toggle", canvas.transform, new Vector2(24, -137), new Vector2(158, 38), new Vector2(0, 1));
+            var button = soundButton.gameObject.AddComponent<Button>(); button.targetGraphic = soundButton.GetComponent<Image>();
+            // Persistent event survives saving/reloading the generated scene.
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick, soundscape.ToggleMute);
+            soundscape.soundLabel = TextAt("Sound on  [M]", soundButton, new Vector2(12, -5), new Vector2(138, 28), 16, "D0D6B7");
             var size = Panel("Size card", canvas.transform, new Vector2(-24, -22), new Vector2(360, 137), new Vector2(1, 1));
             TextAt("YOUR HEIGHT", size, new Vector2(20, -14), new Vector2(210, 26), 15, "D0D6B7");
             demo.heightLabel = TextAt("1.70 m", size, new Vector2(235, -10), new Vector2(110, 32), 24, "F0DEB0");

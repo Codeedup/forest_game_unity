@@ -28,7 +28,7 @@ Concepts used in this exercise:
 ## Open in Unity
 
 1. Clone this repository.
-2. Open the repository root in Unity `6000.2.8f1` or later. Earlier Unity 6.2 versions may work, but are not guaranteed.
+2. Open the repository root in Unity `6000.6.4f1` (the version used for this demo).
 3. Commit and push your changes to this repository.
 
 ## Stretch goal

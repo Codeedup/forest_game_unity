@@ -56,6 +56,48 @@ namespace Underfoot.Editor
             StartCheck();
         }
 
+        public static void OpenDemo()
+        {
+            EditorSceneManager.OpenScene(UnderfootBuilder.ScenePath);
+        }
+
+        [MenuItem("Underfoot/Capture close-up review views (Play Mode)")]
+        public static void CaptureDetailViews()
+        {
+            if (!EditorApplication.isPlaying) throw new InvalidOperationException("Enter Play Mode first.");
+            Directory.CreateDirectory(Output);
+            var demo = Object.FindFirstObjectByType<UnderfootDemo>();
+            var player = demo.player;
+            Vector3 position = player.transform.position;
+            Quaternion bodyRotation = player.body.rotation;
+            float height = player.Height, yaw = player.orbit.yaw, pitch = player.orbit.pitch;
+            player.Controller.enabled = false;
+            try
+            {
+                demo.ChangeSize(0);
+                player.transform.position = new Vector3(.63f, .054f, .08f);
+                player.orbit.yaw = -25; player.orbit.pitch = 55;
+                Capture(player.orbit, "05-leaf-lace-and-dew");
+                player.transform.position = new Vector3(-.45f, .004f, .70f);
+                player.orbit.yaw = 0; player.orbit.pitch = 8;
+                Capture(player.orbit, "06-bark-and-shelf-fungi");
+                var samples = new float[1024];
+                AudioListener.GetOutputData(samples, 0);
+                float energy = 0;
+                foreach (float sample in samples) energy += sample * sample;
+                File.WriteAllText(Output + "/audio-output.txt", "Live AudioListener output RMS: " + Mathf.Sqrt(energy / samples.Length));
+            }
+            finally
+            {
+                player.transform.position = position; player.body.rotation = bodyRotation;
+                player.RequestHeight(height);
+                player.Controller.enabled = true;
+                demo.ChangeSize(Mathf.Log(player.Height / player.minHeight) / Mathf.Log(player.maxHeight / player.minHeight));
+                player.orbit.yaw = yaw; player.orbit.pitch = pitch; player.orbit.Frame();
+            }
+            Debug.Log("UNDERFOOT_DETAIL_VIEWS_SAVED: close-ups and live audio output in Logs/Underfoot.");
+        }
+
         static void WatchLog(string message, string stack, LogType type)
         {
             if (stack.Contains("UnityEditor.Search.SearchDatabase"))
@@ -117,7 +159,9 @@ namespace Underfoot.Editor
             Require(Mathf.Abs(p.Height - .08f) < .001f && p.WalkingSpeed < fullSpeed && Mathf.Abs(p.Controller.height - p.Height) < .001f, "Slider changes body, collider and speed to 8 cm");
             Require(p.orbit.GetComponent<Camera>().nearClipPlane < .003f && Mathf.Abs(p.transform.position.y) < .03f, "Tiny camera clipping and feet remain grounded");
             int count = demo.details.CreatedCount;
-            Require(count == demo.details.mossCount + demo.details.fineCount + 1, "Both thresholds instantiate exactly the bounded detail count");
+            Require(count == demo.details.mossCount + demo.details.fineCount + 3, "Both thresholds instantiate exactly the bounded detail count");
+            Require(demo.details.BarkLayer && demo.details.LeafLace && demo.details.BarkLayer.gameObject.activeInHierarchy && demo.details.LeafLace.gameObject.activeInHierarchy,
+                "Shrinking reveals bark relief, fine leaf veins and dew");
             for (int i = 0; i < 4; i++) { demo.ChangeSize(1); demo.ChangeSize(0); yield return null; }
             Require(demo.details.CreatedCount == count, "Repeated threshold crossings reuse details");
             demo.ChangeSize(.21f); bool wasVisible = demo.details.FineLayer.gameObject.activeSelf;
@@ -152,9 +196,20 @@ namespace Underfoot.Editor
             Require(p.GrowthBlocked && p.Height < .23f && Vector3.Distance(inside, p.transform.position) < .02f && demo.sizeSlider.value < .6f,
                 "Growth is clamped beneath the roof and the slider agrees");
             demo.ChangeSize(0); Capture(p.orbit, "04-home-interior");
+            var sound = Object.FindFirstObjectByType<UnderfootSoundscape>();
+            Require(sound && sound.music.clip && sound.forest.clip && sound.music.loop && sound.forest.loop &&
+                sound.music.isPlaying && sound.forest.isPlaying && sound.music.timeSamples > 0 && sound.forest.timeSamples > 0,
+                "Original music and forest ambience are loaded and playing as loops");
+            Require(sound.forest.volume < sound.forestVolume * .8f, "Forest ambience softens inside the home");
+            sound.ToggleMute(); pause = Pause(1.6f); while (pause.MoveNext()) yield return null;
+            Require(sound.music.volume < .001f && sound.forest.volume < .001f && sound.Muted, "Sound toggle fades both tracks to silence");
+            sound.ToggleMute(); pause = Pause(1.6f); while (pause.MoveNext()) yield return null;
+            Require(sound.music.volume > .1f && sound.forest.volume > .1f && !sound.Muted, "Sound toggle restores both tracks");
             demo.ResetDemo(); yield return null;
             Require(Mathf.Abs(p.Height - 1.7f) < .001f && !demo.Discovered && demo.gnome.ActiveSeedCount == 0 && !demo.details.MossLayer.gameObject.activeSelf,
                 "Reset restores player, UI, discovery, details and seeds");
+            Require(!demo.details.BarkLayer.gameObject.activeInHierarchy && !demo.details.LeafLace.gameObject.activeInHierarchy,
+                "Reset hides the new detail layers without destroying or duplicating them");
             // Full-size approach must hit actual geometry, with no permission-based doorway check.
             move = MoveTo(p, new Vector3(0, 0, .05f), 3); while (move.MoveNext()) yield return null;
             move = MoveTo(p, new Vector3(0, 0, 1.33f), 3); while (move.MoveNext()) yield return null;
