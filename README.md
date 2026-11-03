@@ -1,5 +1,7 @@
 # Forest Game Unity
 
+The **Underfoot** woodland prototype is ready to open at `Assets/Underfoot/Scenes/UnderfootDemo.unity`. See [DEMO_GUIDE.md](DEMO_GUIDE.md) for controls, the presentation sequence and verification notes. The course exercise below is preserved in `SampleScene`.
+
 This repository is a Unity project for the formative assessment. The Unity project files (`Assets`, `Packages`, and `ProjectSettings`) are at the repository root.
 
 ## Overview
