@@ -16,10 +16,12 @@ The project is a whimsical fairy-tale woodland viewed at different character sca
 - Do not generate large reports, duplicate documentation, speculative variants, or broad refactors. Do not spend time on optional polish until the requested playable behaviour works.
 - Run focused checks that address a real risk. Avoid repeating a successful Unity import, compile, or Play Mode walkthrough without a reason. If a check fails, inspect the relevant output and fix the cause before retrying.
 - Never claim the project was opened, compiled, or visually inspected unless that check actually ran. Clearly note any check that the current environment cannot perform.
+- Exclude generated Unity folders such as Library, Temp, and obj from broad searches. Use targeted searches and show only relevant log excerpts
 
 ## Implementation rules
 
 - Preserve the Unity version, render pipeline, input system, folder structure, and useful course-template examples. Avoid upgrades or unrelated cleanup.
+- Protect the working tree: check git status --short and the current branch before editing. Don’t reset, switch branches, or overwrite existing changes.
 - Make targeted, reviewable edits. Do not overwrite unrelated user work, delete assets, or change project-wide settings without a clear need.
 - Prefer simple procedural geometry and original materials when assets are not supplied. Make models from coherent shapes, colours, and silhouettes instead of leaving unrelated default primitives as the finished art.
 - Keep the forest readable at both human and miniature scale. Keep key landmarks present while revealing detail; make scale changes feel continuous and grounded.
