@@ -4,14 +4,14 @@ Updated: 3 November 2026.
 
 ## Current status
 
-Work was paused at the user's request so they could present the current version. This handoff records the work; it does not resume implementation or authorise control of the presentation. Wait for the user to ask to continue.
+The user resumed this work on 3 November, requested local Unity operation, investigation of Hub's render-pipeline warning, and a final GitHub push. The resumed verification and close-up style review are complete; see the outcome below.
 
 - Project: `C:\Users\dylan\dev\forst_game_unity`.
 - Scene: `Assets/Underfoot/Scenes/UnderfootDemo.unity`.
 - Unity: **6000.6.4f1**, confirmed by the user and recorded in project settings.
 - GitHub: `https://github.com/Codeedup/forest_game_unity`.
-- Local HEAD and remote `main` are both `9c641ad` — **Build playable Underfoot woodland prototype**.
-- The audio, extra details, and Unity compatibility changes below are saved locally but **not committed or pushed**.
+- At resume, local HEAD and remote `main` were already `0ac2eb0` — **Refine Underfoot woodland demo**, including the audio, details and Unity compatibility changes below.
+- The follow-up commit finishes verification, documentation, local/cloud setup and the idle movement warning fix.
 
 ## What the user asked to add
 
@@ -48,26 +48,31 @@ Use original artwork and sound, with the warm, cute fairy-tale woodland style de
 - Aligned project settings to **6000.6.4f1** following the user's version clarification.
 - Removed the obsolete VR module dependency and updated existing packages needed to resolve Unity 6.6 import/compiler failures. Kept the built-in renderer, legacy input, and original course examples.
 - The actual project was opened and played before the pause. Its present window/Play Mode state must be observed afresh.
+- Resumed setup: disconnected the inherited course project from Unity Cloud in both settings and Hub, removed the unused `com.unity.collab-proxy` package, and disabled old collaboration flags. All content is local; GitHub remains the source-control remote.
+- Hub's warning was **Built-In Render Pipeline is deprecated**, not a failed pipeline. The renderer remains supported in Unity 6.6 and was verified active with supported materials. Its banner was dismissed; Hub may retain the informational issue icon.
+- Fixed a logged zero-vector LookRotation warning when physics displaced an idle player.
 
 ## Evidence already obtained
 
-The actual repository successfully rebuilt, compiled, loaded the saved scene, and passed **29 Play Mode checks** on Unity 6000.6.4f1. Existing evidence is in ignored `Logs/Underfoot/walkthrough.txt` and runtime screenshots in the same directory.
+After the cloud/package and movement changes, the actual repository compiled, loaded the saved scene, and passed **31 Play Mode checks** on Unity 6000.6.4f1. Evidence is in ignored `Logs/Underfoot/walkthrough.txt`, `resume-verification.log` and runtime screenshots in the same directory. New checks confirm the built-in renderer is active and the Unity Cloud project ID is empty.
 
 Checks covered scaling/grounding, bounded detail spawning and reuse, leaf/bark visibility, gnome interaction, three dynamic Rigidbody seeds settling, home entry, safe growth, reset/replay, looping audio playback, indoor ambience reduction, and mute restoration. There were no gameplay errors during the walkthrough.
 
-Known editor issue: a Unity Search indexing exception appeared during batch startup. Do not describe this as a gameplay error. Audio playback was checked through Unity state; no claim has been made that a person listened to the final mix.
+Earlier editor issue: a Unity Search indexing exception appeared during batch startup. It did not recur in the resumed run. Audio playback and mute restoration passed the walkthrough. Interactive output RMS measured **0.08135428** after enabling the Game view toolbar's muted speaker control. No claim has been made that a person listened to the final mix.
 
-The existing single reviewer `/root/visual_style_review` reviewed five updated runtime renders. It reported no must-fix issue in those views and found the hood, gnome framing, three seeds, and route readable. Its final close-up surface review remains unfinished. It was interrupted when work paused.
+The resumed session used exactly one visual reviewer, `/root/visual_style_review`, because the earlier reviewer was no longer available. It inspected seven current runtime renders, including leaf/dew and bark/fungi close-ups, normal and miniature scale, seed trail, doorway and interior. It found no must-fix or should-fix issues. Optional polish: more irregular bark ridges and stronger dew highlights. The main agent inspected the close-ups and home views and retained the coherent procedural style. The reviewer did not test live interaction or audio.
 
-## Remaining work when resumed
+## Resume outcome
 
-1. **Finish the close-up review.** The compiled editor helper **Underfoot > Capture close-up review views (Play Mode)** captures leaf/dew and bark/fungi views, restores the player/camera, and records live audio output RMS. Those captures were not completed before the pause. Inspect the results and continue with the existing reviewer if available. `AGENTS.md` requires exactly one visual reviewer; do not create an additional concurrent reviewer or delegate implementation.
-2. **Correct any concrete review findings**, then perform focused verification appropriate to those changes. The 29-check walkthrough already passed; do not repeat it without a reason.
-3. **Fix stale documentation.** `DEMO_GUIDE.md` still says verification used only an isolated copy, mentions unverified Unity 6000.2.8f1, and says versions/packages were preserved. Replace those outdated statements with the actual repository verification and necessary 6000.6.4f1 compatibility changes.
-4. **Inspect the final Git diff.** Preserve any user work since the pause. In particular, `Assets/_Recovery/` and additional `ProjectSettings/PackageManagerSettings.asset` changes are now present; inspect their origin and relevance rather than blindly committing or deleting them. Keep caches, logs, and generated solution files out of Git.
-5. **Commit and push the finished update to `main`**, as already requested by the user. Check the diff for whitespace problems, verify the remote tip matches the new commit, and report the result. No final audio/detail push has happened yet.
+1. Close-up captures are complete and included in the opt-in verification command.
+2. All 31 checks passed after the functional and setup changes; the latest batch run logged no Search exception, cloud 403 or zero-vector rotation warning.
+3. `DEMO_GUIDE.md` now documents actual repository verification, Unity 6000.6.4f1 compatibility, local operation and the Hub warning.
+4. The recovery scene and Package Manager settings were already committed in `0ac2eb0`; they were preserved. Caches, logs and generated solution files remain ignored.
+5. The final update belongs on `main`; use Git history and the reported push result for its exact commit ID.
 
-No further major feature or asset pack was agreed. The remaining scope is finishing and reviewing the existing additions, updating the notes, and pushing them.
+The interactive editor reopened the saved scene, the height slider reached 8 cm, and the project was returned to Edit Mode with Game view audio monitoring enabled.
+
+No further feature or asset pack is pending from this handoff. The old cloud project belongs to the template organization and was not deleted; the local project is disconnected from it.
 
 ## Presentation controls
 

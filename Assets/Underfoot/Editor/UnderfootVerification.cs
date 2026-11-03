@@ -106,6 +106,7 @@ namespace Underfoot.Editor
                 return;
             }
             if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert) hadError = true;
+            if (message.Contains("Look rotation viewing vector is zero")) hadError = true;
         }
         static void Tick()
         {
@@ -149,6 +150,9 @@ namespace Underfoot.Editor
             p.ControlsEnabled = false; p.orbit.ControlsEnabled = false;
             var pause = Pause(.6f); while (pause.MoveNext()) yield return null;
             Require(Mathf.Abs(p.Height - 1.7f) < .001f && Mathf.Abs(p.transform.position.y) < .03f, $"Full-size start grounded at 1.70 m ({p.transform.position:F3})");
+            Require(UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline == null && QualitySettings.renderPipeline == null,
+                "Built-in render pipeline is active");
+            Require(string.IsNullOrEmpty(Application.cloudProjectId), "Project has no Unity Cloud link");
             foreach (var renderer in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
                 foreach (var material in renderer.sharedMaterials)
                     if (!material || !material.shader || !material.shader.isSupported) throw new InvalidOperationException("Missing or unsupported material on " + renderer.name);
@@ -168,6 +172,7 @@ namespace Underfoot.Editor
             p.RequestHeight(.16f); demo.details.Refresh();
             Require(wasVisible && demo.details.FineLayer.gameObject.activeSelf, "Fine-detail hysteresis keeps the layer stable near the threshold");
             demo.ChangeSize(0);
+            CaptureDetailViews();
             var move = MoveTo(p, new Vector3(-.18f, 0, -.055f), 5); while (move.MoveNext()) yield return null;
             Capture(p.orbit, "02-miniature-encounter");
             Require(demo.gnome.CanInteract && demo.gnome.Interact(), "Walk to the gnome and trigger its explicit interaction");

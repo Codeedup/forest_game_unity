@@ -47,7 +47,8 @@ namespace Underfoot
             fallSpeed = Mathf.Max(fallSpeed - 9.81f * dt, -12);
             Vector3 before = transform.position;
             Controller.Move((direction * WalkingSpeed + Vector3.up * fallSpeed) * dt);
-            bool moving = Vector3.ProjectOnPlane(transform.position - before, Vector3.up).sqrMagnitude > .00000001f;
+            bool moving = direction.sqrMagnitude > .000001f &&
+                Vector3.ProjectOnPlane(transform.position - before, Vector3.up).sqrMagnitude > .00000001f;
             if (moving)
             {
                 body.rotation = Quaternion.Slerp(body.rotation, Quaternion.LookRotation(direction), 12 * dt);
