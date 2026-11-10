@@ -8,16 +8,19 @@ Open this repository in **Unity 6000.6.4f1**, open `Assets/Underfoot/Scenes/Unde
 
 If rebuilding the procedural artwork is necessary, stop Play Mode and choose **Underfoot > Build or rebuild demo scene**. This replaces only the generated Underfoot scene and its named assets. Save any changes to the generated scene elsewhere before rebuilding it. Generation never runs automatically on reload or Play.
 
-## One-minute demonstration
+## Short demonstration
 
-1. Show the human wanderer and the large leaf, roots and mushrooms. Walk briefly with **WASD**.
-2. Drag the **YOUR HEIGHT** slider left, from Human towards Tiny. Watch the character shrink continuously to **8 cm** and the moss and miniature mushrooms appear.
-3. Walk towards the gnome immediately ahead and slightly to the left of the stepping stones. When prompted, press **E**.
-4. Watch Pip gesture and throw three golden seeds. Follow the stones and seed trail towards the amber lantern beneath the large tree.
-5. Walk through the small doorway. Try growing inside: growth stops at the available space. Return to Tiny to move freely and read the discovery message.
-6. Press **R** to restore the opening state and repeat.
+1. Show the hooded human wanderer, permanent leaf, roots and mushrooms. Walk with **WASD** and orbit with **right mouse drag**.
+2. Drag **YOUR HEIGHT** towards Tiny (8 cm). Moss, leaf lace and tiny mushrooms appear; releasing the slider gives one soft descending cue. Growing in open space gives a complementary rising cue. Blocked growth gives a text prompt instead of a successful grow sound.
+3. Approach Pip, just left of the stepping stones, and press **E**. Read his captions, then click **Quiet rootway** / **Squirrel clearing**, or press **1** / **2**. Both choices work with sound muted. **Escape** closes choices; stepping away also closes them.
+4. Follow the selected golden seed trail. The **quiet rootway** passes under the mossy arch and around a curled leaf. The **squirrel clearing** crosses Hazel's patrol: wait beside the cover stones, then cross behind her. A curious bump returns you to a nearby stone with a short recovery grace period, without damage.
+5. Both paths meet at the dry spring just before the home. Approach the visible twig and press **E ? Move the twig**. A dynamic Rigidbody impulse moves it clear; water returns along the channel, the lantern and window brighten, and Pip acknowledges the result in captions.
+6. Walk into the warm home and try growing: real geometry limits available height. Return to Tiny to move freely.
+7. Press **R** to restore the opening state, including the twig, route choice, patrol, dialogue, water audio and dim lantern. Try the other path.
 
-**Right mouse drag** orbits the third-person camera. Release it to use the slider. Movement is relative to the camera. **M**, or the **Sound on/off** button, fades music and ambience in or out. The gnome can repeat his throw after a short cooldown; previous seeds are replaced.
+**M**, or **Sound on/off**, controls music, ambience, size cues and water. The mute preference survives reset. Size feedback waits until a slider adjustment finishes, with a short cooldown and a minimum change to avoid jitter. The route choice can be changed by talking to Pip again before clearing the spring. The two paths remain physically open; they converge at one shared puzzle.
+
+Dialogue is captioned text with buttons and keyboard choices. No recorded/generated speech, microphone capture, speech recognition, paid asset, network service or new package is used. The installed package manifest supplies no speech recognizer; microphone capture alone would not recognize words. Optional push-to-talk recognition remains a future option, with the same visible choices as a complete fallback.
 
 ## Formative evidence
 
@@ -26,20 +29,18 @@ If rebuilding the procedural artwork is necessary, stop Play Mode and choose **U
 | C# object movement | `UnderfootPlayer.cs`: camera-relative CharacterController movement, gravity, turning and procedural walking |
 | Continuous mathematical relationship | `UnderfootDemo.cs`: logarithmic height slider; `UnderfootPlayer.cs` and `UnderfootCamera.cs`: height-dependent collision, speed and framing |
 | Logical conditions and spawning | `UnderfootDetails.cs`: below 50 cm, 34 moss clusters, raised leaf veins and bark relief appear; below 15 cm, 22 inkcap / rose bellcap colonies plus fine leaf veins and dew appear. All 59 created roots are reused, with hysteresis to prevent flicker |
-| Physics and collisions | `UnderfootGnome.cs`: ballistic initial velocity, then dynamic Rigidbody flight and contacts; `GoldenSeed.prefab`: collider and friction material |
-| Interaction and discovery | `UnderfootGnome.cs` and `UnderfootDemo.cs`: range and height checks, gesture, dialogue, confined growth and home discovery |
+| Physics and collisions | `UnderfootSpring.cs`: one lodged twig becomes a dynamic Rigidbody, receives an impulse, and settles through gravity and contacts; the original seed prefab is preserved |
+| Interaction and discovery | `UnderfootGnome.cs` and `UnderfootDemo.cs`: range and height checks, captioned route choices, spring state, confined growth and home discovery |
 | Reproducible authoring | `Editor/UnderfootBuilder.cs`: saved scene, original procedural models and built-in-renderer materials |
-| Sound | `UnderfootSoundscape.cs`: original flute and plucked-string tune, wind, leaf rustle, birds and faint insects; seamless looping, mute fade and sheltered home ambience |
+| Sound | `UnderfootSoundscape.cs`: original flute and plucked-string tune, wind, leaf rustle, birds and faint insects; looping, mute fade, sheltered home ambience, debounced size cues and restored spring water |
 
 Expand **Underfoot demo > Runtime - moss / tiny mushrooms** in the Play Mode hierarchy to inspect the created objects. They are instantiated on first crossing, hidden when growing, and reused thereafter, including after reset. The leaf details are attached to the permanent fallen leaf. Decorative detail has no colliders, and its meshes are combined by material to keep rendering costs modest. Legacy input and the built-in renderer are retained.
 
 ## Checks and limits
 
-The actual repository compiled, generated its saved assets, reopened the saved scene, and completed a Play Mode walkthrough on **Unity 6000.6.4f1 / Windows 11 / Intel Arc Graphics**. Checks covered movement and grounding, 8 cm scaling, both detail thresholds and reuse, dynamic seed launch / collision / settling, physical home entry, blocked growth, reset and replay, looping audio, indoor ambience and mute restoration. The slider was also clicked and dragged in the interactive editor, with stable orbit direction, and keyboard `R` restored the opening state. Runtime images received the required independent style review; the rear hood silhouette and miniature framing were corrected afterward.
+The feature branch uses Unity **6000.6.4f1**, built-in rendering and legacy input. Existing course examples and package versions are retained. `Underfoot > Verify saved demo in Play Mode` runs the actual controller and PhysX against the saved scene; results and camera renders are written to ignored `Logs/Underfoot/`. Save any current scene before using the command, which opens the saved demo and exits Play Mode when finished.
 
-The project uses the user's installed **6000.6.4f1** editor. Compatibility changes removed the obsolete VR module and updated existing development, Timeline, UI and multiplayer-center packages. Legacy input, the built-in renderer and the course examples are retained. A Search database indexing exception occurred during an earlier batch startup; it was an editor issue, with no Underfoot gameplay errors. No standalone performance benchmark was run.
-
-The resumed verification passed **31 Play Mode checks**, including supported shaders, the active built-in renderer and an empty Unity Cloud project ID. Seven runtime renders, including leaf/dew and bark/fungi close-ups, passed the final independent style review with only optional polish suggestions. The interactive slider reached 8 cm and live audio output was measured after unmuting the Game view toolbar (RMS 0.081). This verifies an output signal; the final mix has not received a human listening review. The idle player's zero-vector rotation warning was also fixed.
+The blocked-spring implementation is undergoing its focused acceptance walkthrough and final independent style review. Verification results will be recorded here when complete. Windows is the available test platform; recent-Mac compatibility and standalone builds remain unverified. Automated audio checks establish playback and signal data, not a human listening review.
 
 ## Local project and Hub warning
 
@@ -59,4 +60,4 @@ Explain the concept, demonstrate movement / scale / spawning / physics, then sho
 
 Over the next three weeks, first stabilise navigation and the camera at all sizes; then improve close-up woodland detail, encounters and intentional audio; finally develop and verify the separate WebGL/WebAudio application and prepare documentation and walkthroughs. Confirm this plan against the official assessment brief and deadline. A musical companion involving the gnome is a possible direction, not an agreed web design.
 
-The main challenges are camera obstruction across scales, safe growth under roots, procedural art that holds up close, and seed throws that settle reliably. The later final applications still need both visual and sonic elements; this formative prototype does not replace the official assessment requirements.
+The main challenges are camera obstruction across scales, safe growth under roots, procedural art that holds up close, and a twig impulse that clears and settles reliably. The later final applications still need both visual and sonic elements; this formative prototype does not replace the official assessment requirements.

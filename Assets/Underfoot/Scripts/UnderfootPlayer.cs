@@ -105,6 +105,14 @@ namespace Underfoot
             body.localScale = Vector3.one * value;
         }
 
+        public void RecoverAt(Vector3 position)
+        {
+            Controller.enabled = false;
+            transform.position = position;
+            Controller.enabled = true;
+            fallSpeed = 0;
+        }
+
         public void ResetPlayer()
         {
             Controller.enabled = false;

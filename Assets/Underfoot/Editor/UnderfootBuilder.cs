@@ -11,7 +11,7 @@ using UnityEngine.UI;
 namespace Underfoot.Editor
 {
     // Explicit, repeatable authoring command. Nothing generates on import or on entering Play Mode.
-    public static class UnderfootBuilder
+    public static partial class UnderfootBuilder
     {
         const string Root = "Assets/Underfoot";
         public const string ScenePath = Root + "/Scenes/UnderfootDemo.unity";
@@ -35,6 +35,11 @@ namespace Underfoot.Editor
             Colour("Amber", "FFCE79", true); Colour("Pollen", "F5DDA1", true);
             Colour("BarkCrease", "513D31"); Colour("Lichen", "A5B48A"); Colour("RoseCap", "BB817B");
             Colour("LeafSpeckle", "9C8547"); Colour("Dew", "C5DCC3");
+            Colour("SpringWater", "78B9B2", true); Colour("WaitingAmber", "806945", true);
+            Colour("SquirrelFur", "B77B53"); Colour("SquirrelTail", "A46A46");
+            palette["SpringWater"].SetFloat("_Glossiness", .8f);
+            palette["SpringWater"].SetColor("_EmissionColor", Hex("78B9B2") * .18f);
+            palette["WaitingAmber"].SetColor("_EmissionColor", Hex("806945") * .04f);
             palette["Dew"].SetFloat("_Glossiness", .9f);
             cone = SaveMesh("Pointed", Lathe(new[] { new Vector2(.5f, 0), new Vector2(.42f, .18f), new Vector2(.22f, .7f), new Vector2(0, 1) }, 12));
             cloak = SaveMesh("Cloak", Lathe(new[] { new Vector2(.31f, 0), new Vector2(.28f, .15f), new Vector2(.14f, .8f), new Vector2(.12f, 1) }, 14));
@@ -89,7 +94,7 @@ namespace Underfoot.Editor
             var orbit = camObj.GetComponent<UnderfootCamera>(); orbit.player = player; player.orbit = orbit;
             orbit.Frame();
 
-            var gnomeObject = Group("Pip - seedkeeper", world);
+            var gnomeObject = Group("Pip - springkeeper", world);
             gnomeObject.position = new Vector3(-.15f, 0, .12f);
             var gnomeBody = Character(gnomeObject, true, out _, out var gnomeArms, out var hand);
             gnomeBody.localScale = Vector3.one * .165f;
@@ -97,9 +102,8 @@ namespace Underfoot.Editor
             var gnomeCollider = gnomeObject.gameObject.AddComponent<CapsuleCollider>();
             gnomeCollider.height = .16f; gnomeCollider.radius = .035f; gnomeCollider.center = Vector3.up * .08f;
             var gnome = gnomeObject.gameObject.AddComponent<UnderfootGnome>();
-            gnome.player = player; gnome.model = gnomeBody; gnome.throwingArm = gnomeArms[1]; gnome.hand = hand;
-            gnome.seedPrefab = SeedPrefab();
-            gnome.landingPoints = new[] { new Vector3(.018f, .008f, .38f), new Vector3(-.018f, .008f, .68f), new Vector3(.018f, .008f, .98f) };
+            gnome.player = player; gnome.model = gnomeBody; gnome.pointingArm = gnomeArms[1];
+            SeedPrefab(); // Preserve the course prototype's original seed asset.
 
             var systems = new GameObject("Underfoot demo");
             var details = systems.AddComponent<UnderfootDetails>();
@@ -109,6 +113,8 @@ namespace Underfoot.Editor
             var demo = systems.AddComponent<UnderfootDemo>();
             demo.player = player; demo.details = details; demo.gnome = gnome; demo.home = home;
             var soundscape = Soundscape(systems, demo);
+            demo.soundscape = soundscape;
+            BuildSpringRoutes(systems, world, demo, soundscape);
             UI(demo, soundscape);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -157,7 +163,7 @@ namespace Underfoot.Editor
                 Shape("Interior timber upright", PrimitiveType.Cube, home, new Vector3(side * .135f, .11f, .379f), new Vector3(.015f, .22f, .02f), "BarkLight");
             Shape("Back timber beam", PrimitiveType.Cube, home, new Vector3(0, .19f, .379f), new Vector3(.28f, .015f, .02f), "BarkLight");
             Shape("Round window frame", PrimitiveType.Cylinder, home, new Vector3(.15f, .13f, -.026f), new Vector3(.073f, .006f, .073f), "Bark").localRotation = Quaternion.Euler(90, 0, 0);
-            Shape("Amber round window", PrimitiveType.Cylinder, home, new Vector3(.15f, .13f, -.034f), new Vector3(.054f, .004f, .054f), "Amber").localRotation = Quaternion.Euler(90, 0, 0);
+            Shape("Amber round window", PrimitiveType.Cylinder, home, new Vector3(.15f, .13f, -.034f), new Vector3(.054f, .004f, .054f), "WaitingAmber").localRotation = Quaternion.Euler(90, 0, 0);
             Shape("Window cross", PrimitiveType.Cube, home, new Vector3(.15f, .13f, -.04f), new Vector3(.004f, .054f, .004f), "Wood");
             Shape("Window cross", PrimitiveType.Cube, home, new Vector3(.15f, .13f, -.041f), new Vector3(.054f, .004f, .004f), "Wood");
             Shape("Little table", PrimitiveType.Cylinder, home, new Vector3(-.085f, .064f, .28f), new Vector3(.085f, .009f, .085f), "Wood");
@@ -166,10 +172,10 @@ namespace Underfoot.Editor
             Shape("Tea surface", PrimitiveType.Cylinder, home, new Vector3(-.085f, .094f, .28f), new Vector3(.014f, .001f, .014f), "Bark");
             Shape("Round cushion", PrimitiveType.Sphere, home, new Vector3(.075f, .018f, .29f), new Vector3(.09f, .035f, .09f), "Plum");
             Tube("Lantern hook", home, new Vector3(-.19f, .15f, -.09f), new Vector3(-.19f, .22f, -.09f), .006f, "Bark");
-            Shape("Lantern glow", PrimitiveType.Cylinder, home, new Vector3(-.19f, .16f, -.09f), new Vector3(.035f, .024f, .035f), "Amber");
+            Shape("Lantern glow", PrimitiveType.Cylinder, home, new Vector3(-.19f, .16f, -.09f), new Vector3(.035f, .024f, .035f), "WaitingAmber");
             MeshShape("Lantern cap", cap, home, new Vector3(-.19f, .185f, -.09f), new Vector3(.05f, .04f, .05f), "Bark");
-            PointLight("Lantern - warm welcome", home, new Vector3(-.16f, .14f, -.06f), 1.4f, .7f);
-            PointLight("Interior hearth glow", home, new Vector3(0, .16f, .28f), 1.1f, .48f);
+            PointLight("Lantern - warm welcome", home, new Vector3(-.16f, .14f, -.06f), .16f, .7f);
+            PointLight("Interior hearth glow", home, new Vector3(0, .16f, .28f), .16f, .48f);
             return home;
         }
 
@@ -469,7 +475,19 @@ namespace Underfoot.Editor
             var sound = systems.AddComponent<UnderfootSoundscape>(); sound.demo = demo;
             sound.music = AudioTrack(systems.transform, "Original meadow tune", "Underfoot_Meadow_Waltz.wav");
             sound.forest = AudioTrack(systems.transform, "Wind, leaf rustle and woodland birds", "Underfoot_Forest_Air.wav");
+            sound.shrinkCue = FeedbackClip("Underfoot_Shrink.wav"); sound.growCue = FeedbackClip("Underfoot_Grow.wav");
+            sound.feedback = new GameObject("Size adjustment cues", typeof(AudioSource)).GetComponent<AudioSource>();
+            sound.feedback.transform.SetParent(systems.transform, false); sound.feedback.playOnAwake = false;
+            sound.water = AudioTrack(systems.transform, "Restored spring water", "Underfoot_Spring.wav");
+            sound.water.spatialBlend = .7f; sound.water.rolloffMode = AudioRolloffMode.Linear;
+            sound.water.minDistance = .15f; sound.water.maxDistance = 2;
             return sound;
+        }
+        static AudioClip FeedbackClip(string file)
+        {
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(Root + "/Audio/" + file);
+            if (!clip) throw new FileNotFoundException("Generate feedback with Tools/generate_underfoot_feedback.py first.", file);
+            return clip;
         }
         static AudioSource AudioTrack(Transform parent, string name, string file)
         {
@@ -515,6 +533,8 @@ namespace Underfoot.Editor
             // Persistent event survives saving/reloading the generated scene.
             UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick, soundscape.ToggleMute);
             soundscape.soundLabel = TextAt("Sound on  [M]", soundButton, new Vector2(12, -5), new Vector2(138, 28), 16, "D0D6B7");
+            var quest = Panel("Spring objective", canvas.transform, new Vector2(24, -189), new Vector2(360, 76), new Vector2(0, 1));
+            demo.questLabel = TextAt("", quest, new Vector2(14, -9), new Vector2(332, 60), 17, "F0DEB0");
             var size = Panel("Size card", canvas.transform, new Vector2(-24, -22), new Vector2(360, 137), new Vector2(1, 1));
             TextAt("YOUR HEIGHT", size, new Vector2(20, -14), new Vector2(210, 26), 15, "D0D6B7");
             demo.heightLabel = TextAt("1.70 m", size, new Vector2(235, -10), new Vector2(110, 32), 24, "F0DEB0");
@@ -533,13 +553,27 @@ namespace Underfoot.Editor
             demo.sizeSlider = slider;
             var bottom = Panel("Controls and prompt", canvas.transform, new Vector2(0, 22), new Vector2(760, 86), new Vector2(.5f, 0));
             demo.promptLabel = TextAt("", bottom, new Vector2(18, -12), new Vector2(725, 30), 19, "F0DEB0"); demo.promptLabel.alignment = TextAnchor.MiddleCenter;
-            var controls = TextAt("WASD  Walk     |     Right mouse drag  Look     |     E  Talk     |     R  Reset", bottom, new Vector2(18, -46), new Vector2(725, 25), 16, "D0D6B7"); controls.alignment = TextAnchor.MiddleCenter;
+            var controls = TextAt("WASD  Walk   |   Right mouse drag  Look   |   E  Interact   |   R  Reset", bottom, new Vector2(18, -46), new Vector2(725, 25), 16, "D0D6B7"); controls.alignment = TextAnchor.MiddleCenter;
             var message = Panel("Story message", canvas.transform, new Vector2(0, 123), new Vector2(650, 76), new Vector2(.5f, 0));
             message.GetComponent<Image>().color = new Color(.12f, .16f, .11f, .72f);
             demo.messageLabel = TextAt("", message, new Vector2(15, -7), new Vector2(620, 62), 21, "F3DBA4"); demo.messageLabel.alignment = TextAnchor.MiddleCenter;
             // Empty dialogue should leave the landscape visible.
             var visibility = message.gameObject.AddComponent<UnderfootMessagePanel>(); visibility.message = demo.messageLabel;
+            var choices = Panel("Pip route choices", canvas.transform, new Vector2(0, 214), new Vector2(650, 68), new Vector2(.5f, 0));
+            RouteButton(choices, "1  Quiet rootway", new Vector2(12, -10), demo.gnome.ChooseRootway);
+            RouteButton(choices, "2  Squirrel clearing", new Vector2(333, -10), demo.gnome.ChooseSquirrel);
+            demo.gnome.choicePanel = choices.gameObject; choices.gameObject.SetActive(false);
             new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+        }
+
+        static void RouteButton(Transform parent, string label, Vector2 position, UnityEngine.Events.UnityAction action)
+        {
+            var rect = Panel(label, parent, position, new Vector2(305, 48), new Vector2(0, 1));
+            rect.GetComponent<Image>().color = Hex("526446");
+            var button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = rect.GetComponent<Image>();
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick, action);
+            var text = TextAt(label, rect, new Vector2(8, -4), new Vector2(289, 40), 21, "F3DBA4");
+            text.alignment = TextAnchor.MiddleCenter;
         }
 
         static RectTransform Panel(string name, Transform parent, Vector2 position, Vector2 size, Vector2 anchor)
