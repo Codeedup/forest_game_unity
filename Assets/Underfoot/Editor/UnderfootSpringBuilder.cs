@@ -15,8 +15,8 @@ namespace Underfoot.Editor
                 new Vector3(-.30f, 0, .27f), new Vector3(-.30f, 0, .48f), new Vector3(-.30f, 0, .57f),
                 new Vector3(-.17f, 0, .67f), new Vector3(-.17f, 0, .81f), new Vector3(-.04f, 0, .91f) };
             spring.squirrelPath = new[] {
-                new Vector3(.22f, 0, .28f), new Vector3(.34f, 0, .40f), new Vector3(.34f, 0, .65f),
-                new Vector3(.25f, 0, .80f), new Vector3(.14f, 0, .90f), new Vector3(.02f, 0, .91f) };
+                new Vector3(.20f, 0, .28f), new Vector3(.24f, 0, .43f), new Vector3(.24f, 0, .53f),
+                new Vector3(.26f, 0, .83f), new Vector3(.14f, 0, .90f), new Vector3(.02f, 0, .91f) };
             var routes = Group("Two paths to one spring", world);
             spring.rootwaySeeds = RoutePath(routes, "Quiet rootway", spring.rootwayPath);
             spring.squirrelSeeds = RoutePath(routes, "Squirrel clearing", spring.squirrelPath);
@@ -25,30 +25,39 @@ namespace Underfoot.Editor
             Sign(routes, new Vector3(.13f, 0, .99f), "SPRING", .095f);
 
             // A little arched root and a leaf detour; actual collision leaves room for an 8 cm walker.
-            var archPoints = new[] { new Vector3(-.43f, 0, .48f), new Vector3(-.42f, .14f, .48f),
-                new Vector3(-.30f, .18f, .48f), new Vector3(-.18f, .14f, .48f), new Vector3(-.17f, 0, .48f) };
-            var archMesh = SaveMesh("RootwayArch", RootMesh(archPoints, new[] { .035f, .038f, .045f, .038f, .025f }));
+            var archPoints = new Vector3[9]; var archRadii = new float[9];
+            for (int i = 0; i < archPoints.Length; i++)
+            {
+                float angle = Mathf.PI * (1 - i / 8f);
+                archPoints[i] = new Vector3(-.30f + Mathf.Cos(angle) * .14f, Mathf.Sin(angle) * .18f, .48f);
+                archRadii[i] = .025f + Mathf.Sin(angle) * .017f;
+            }
+            var archMesh = SaveMesh("RootwayArch", RootMesh(archPoints, archRadii));
             var arch = MeshShape("Mossy root arch - tiny passage", archMesh, routes, Vector3.zero, Vector3.one, "Bark");
             arch.gameObject.AddComponent<MeshCollider>().sharedMesh = archMesh;
-            Tube("Moss on the sheltered root", routes, new Vector3(-.4f, .17f, .48f), new Vector3(-.22f, .19f, .48f), .025f, "DarkMoss");
             for (int i = 0; i < 7; i++)
-                Shape("Rootway lichen", PrimitiveType.Sphere, routes, new Vector3(-.43f + i * .039f, .19f, .475f), new Vector3(.027f, .008f, .019f), "Lichen");
+            {
+                float angle = Mathf.PI * (.22f + i * .09f);
+                Vector3 at = new Vector3(-.30f + Mathf.Cos(angle) * .15f, Mathf.Sin(angle) * .18f + .03f, .48f);
+                Shape("Rootway moss cushion", PrimitiveType.Sphere, routes, at, new Vector3(.046f, .018f, .05f), "DarkMoss");
+                Shape("Rootway lichen", PrimitiveType.Sphere, routes, at + new Vector3(.008f, .009f, -.014f), new Vector3(.022f, .006f, .019f), "Lichen");
+            }
             var curl = MeshShape("Curled leaf beside the rootway", leafMesh, routes, new Vector3(-.30f, .018f, .70f), new Vector3(.24f, .5f, .17f), "Leaf");
             curl.localRotation = Quaternion.Euler(0, -10, 25);
             var obstacle = curl.gameObject.AddComponent<BoxCollider>();
             obstacle.center = new Vector3(0, .04f, 0); obstacle.size = new Vector3(.5f, .13f, .95f);
-            for (int i = 0; i < 5; i++)
-                Tube("Close-up root bark seam", routes, new Vector3(-.43f, .03f + i * .021f, .44f),
-                    new Vector3(-.41f, .05f + i * .021f, .44f), .002f, "BarkLight");
+            for (int i = 0; i < archPoints.Length - 1; i++)
+                Tube("Close-up root bark seam", routes, archPoints[i] + Vector3.back * .027f,
+                    archPoints[i + 1] + Vector3.back * .027f, .002f, "BarkCrease");
 
             var cover = new List<Collider>();
-            cover.Add(Shape("Squirrel crossing - near cover stone", PrimitiveType.Sphere, routes, new Vector3(.43f, .042f, .37f), new Vector3(.14f, .09f, .12f), "Stone", true).GetComponent<Collider>());
-            cover.Add(Shape("Squirrel crossing - far cover stone", PrimitiveType.Sphere, routes, new Vector3(.43f, .045f, .72f), new Vector3(.13f, .095f, .13f), "Stone", true).GetComponent<Collider>());
-            Mushroom(routes, new Vector3(.23f, 0, .36f), .095f, "Gold");
+            cover.Add(Shape("Squirrel crossing - near cover stone", PrimitiveType.Sphere, routes, new Vector3(.36f, .042f, .40f), new Vector3(.14f, .09f, .12f), "Stone", true).GetComponent<Collider>());
+            cover.Add(Shape("Squirrel crossing - far cover stone", PrimitiveType.Sphere, routes, new Vector3(.43f, .045f, .86f), new Vector3(.13f, .095f, .13f), "Stone", true).GetComponent<Collider>());
+            Mushroom(routes, new Vector3(.14f, 0, .38f), .095f, "Gold");
             var squirrel = Squirrel(routes);
             demo.squirrel = squirrel; squirrel.player = demo.player; squirrel.spring = spring; squirrel.cover = cover.ToArray();
-            squirrel.patrolA = new Vector3(.22f, 0, .55f); squirrel.patrolB = new Vector3(.61f, 0, .55f);
-            squirrel.recoveryPoint = new Vector3(.31f, .003f, .31f);
+            squirrel.patrolA = new Vector3(.14f, 0, .73f); squirrel.patrolB = new Vector3(.50f, 0, .73f);
+            squirrel.recoveryPoint = new Vector3(.18f, .003f, .30f);
             squirrel.transform.SetPositionAndRotation(squirrel.patrolA, Quaternion.Euler(0, 90, 0));
 
             var channel = Group("Blocked spring beneath the guardian roots", world);
@@ -122,7 +131,12 @@ namespace Underfoot.Editor
             var text = new GameObject(label, typeof(TextMesh)).GetComponent<TextMesh>(); text.transform.SetParent(sign, false);
             text.transform.localPosition = new Vector3(0, height, -.007f);
             text.text = label; text.fontSize = 56; text.characterSize = .0065f; text.anchor = TextAnchor.MiddleCenter;
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.color = Hex("FFF0C6");
+            Vector3 bounds = text.GetComponent<Renderer>().bounds.size;
+            float fit = bounds.x > .001f && bounds.y > .001f ? Mathf.Min(.17f / bounds.x, .030f / bounds.y) : .42f;
+            text.transform.localScale = Vector3.one * fit;
+            text.gameObject.AddComponent<UnderfootSignText>().depthShader = AssetDatabase.LoadAssetAtPath<Shader>(Root + "/Materials/WorldSignText.shader");
         }
 
         static UnderfootSquirrel Squirrel(Transform parent)

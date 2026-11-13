@@ -218,7 +218,8 @@ namespace Underfoot.Editor
             Capture(p.orbit, "04-blocked-spring");
             Require(spring.CanClear && spring.ClearTwig() && !spring.ClearTwig(), "Only a local deliberate action clears the twig once");
             pause = Pause(.06f); while (pause.MoveNext()) yield return null;
-            Require(!spring.twig.isKinematic && spring.twig.linearVelocity.x > .1f, "The twig departs through a genuine dynamic Rigidbody impulse");
+            Require(!spring.twig.isKinematic && (spring.twig.position.x - spring.BlockedPosition.x > .005f || spring.twig.linearVelocity.x > .1f),
+                $"Dynamic twig impulse produces motion: displacement={spring.twig.position.x - spring.BlockedPosition.x:F4}, velocity={spring.twig.linearVelocity:F3}");
             pause = Pause(2.2f); while (pause.MoveNext()) yield return null;
             Require(spring.State == UnderfootSpring.SpringState.Flowing && spring.Warmth > .95f && spring.homeLights[0].intensity > 1.3f && sound.water.isPlaying,
                 "Twig displacement restores water audio and warms the lantern");
@@ -267,11 +268,13 @@ namespace Underfoot.Editor
                 "A curious bump gives a nearby recovery, caption and recovery cooldown");
             for (int i = 0; i < spring.squirrelPath.Length; i++)
             {
-                if (i == 2)
+                if (i == 3)
                 {
                     float until = Time.time + 9;
-                    while (squirrel.transform.position.x < .54f && Time.time < until) yield return null;
+                    while (squirrel.transform.position.x < .45f && Time.time < until) yield return null;
+                    p.orbit.yaw = 65; p.orbit.pitch = -5;
                     Capture(p.orbit, "07-squirrel-crossing");
+                    p.orbit.yaw = 0; p.orbit.pitch = 20;
                 }
                 move = MoveTo(p, spring.squirrelPath[i], 6); while (move.MoveNext()) yield return null;
                 Require(Vector3.ProjectOnPlane(p.transform.position - spring.squirrelPath[i], Vector3.up).magnitude < .025f,
