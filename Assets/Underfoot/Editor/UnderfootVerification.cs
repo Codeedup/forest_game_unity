@@ -189,7 +189,11 @@ namespace Underfoot.Editor
             Require(wasVisible && demo.details.FineLayer.gameObject.activeSelf, "Fine detail hysteresis remains stable");
             demo.ChangeSize(0);
             var move = MoveTo(p, new Vector3(-.18f, 0, -.055f), 5); while (move.MoveNext()) yield return null;
+            int voicesBefore = sound.VoiceLineCount;
             Require(demo.gnome.CanInteract && demo.gnome.Interact(), "Miniature walker reaches Pip and opens captioned route choices");
+            var babble = UnderfootGnomeVoice.For(demo.gnome.Dialogue);
+            Require(sound.VoiceLineCount == voicesBefore + 1 && babble && babble.length > .3f && babble.length <= 1.81f && UnderfootGnomeVoice.For(demo.gnome.Dialogue) == babble,
+                $"Pip's line plays one short cached synthesised babble with captions ({(babble ? babble.length : 0):F2} s)");
             yield return null;
             var buttons = demo.gnome.choicePanel.GetComponentsInChildren<UnityEngine.UI.Button>(true);
             Require(buttons.Length == 2 && demo.gnome.choicePanel.activeSelf && spring.SelectedRoute == UnderfootSpring.Route.None,
@@ -241,8 +245,10 @@ namespace Underfoot.Editor
             pause = Pause(1); while (pause.MoveNext()) yield return null;
             Require(sound.forest.volume < sound.forestVolume * .8f, "Home still shelters the forest ambience");
             sound.ToggleMute(); pause = Pause(1.5f); while (pause.MoveNext()) yield return null;
-            Require(sound.music.volume < .001f && sound.forest.volume < .001f && sound.water.volume < .001f && sound.feedback.volume == 0,
-                "Mute silences music, ambience, water and interaction cues");
+            int voicesMuted = sound.VoiceLineCount;
+            Require(sound.music.volume < .001f && sound.forest.volume < .001f && sound.water.volume < .001f && sound.feedback.volume == 0 &&
+                !sound.PlayVoice("Pip: Muted check.") && sound.VoiceLineCount == voicesMuted,
+                "Mute silences music, ambience, water, interaction cues and Pip's babble");
             sound.ToggleMute(); pause = Pause(1.5f); while (pause.MoveNext()) yield return null;
             Require(sound.music.volume > .1f && sound.forest.volume > .1f && sound.water.volume > .1f, "Unmute restores the soundscape including water");
             CaptureDetailViews();
@@ -295,7 +301,7 @@ namespace Underfoot.Editor
                 "Reset during a moving twig cancels success feedback and restores the patrol");
             Require(!hadError, "No gameplay errors during the walkthrough");
             results.Add("Environment: Unity " + Application.unityVersion + "; " + SystemInfo.graphicsDeviceName + "; " + SystemInfo.operatingSystem);
-            results.Add("Audio checks verify clips, playback state and output data; no human listening review. Microphone and speech output are not implemented. Windows only; Mac unverified.");
+            results.Add("Audio checks verify clips, playback state and output data; no human listening review. Pip's voice is synthesised babble, not speech; microphone input is not implemented. Windows only; Mac unverified.");
         }
         static void Capture(UnderfootCamera orbit, string name, bool withUI = false)
         {

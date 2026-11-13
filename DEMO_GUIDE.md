@@ -20,7 +20,7 @@ If rebuilding the procedural artwork is necessary, stop Play Mode and choose **U
 
 **M**, or **Sound on/off**, controls music, ambience, size cues and water. The mute preference survives reset. Size feedback waits until a slider adjustment finishes, with a short cooldown and a minimum change to avoid jitter. The route choice can be changed by talking to Pip again before clearing the spring. The two paths remain physically open; they converge at one shared puzzle.
 
-Dialogue is captioned text with buttons and keyboard choices. No recorded/generated speech, microphone capture, speech recognition, paid asset, network service or new package is used. The installed package manifest supplies no speech recognizer; microphone capture alone would not recognize words. Optional push-to-talk recognition remains a future option, with the same visible choices as a complete fallback.
+Dialogue is captioned text with buttons and keyboard choices. Each of Pip's lines also plays a short original babble (under 2 s), synthesised in code from the caption by `UnderfootGnomeVoice.cs`: soft pentatonic blips that rise at a question. It is not speech; the captions carry every word, and it follows the sound toggle. No recorded speech, microphone capture, speech recognition, paid asset, network service or new package is used. The installed package manifest supplies no speech recognizer; microphone capture alone would not recognize words. Optional push-to-talk recognition remains a future option, with the same visible choices as a complete fallback.
 
 ## Formative evidence
 

@@ -15,6 +15,7 @@ namespace Underfoot
         public bool SpringRestored { get; private set; }
         public int ShrinkCueCount { get; private set; }
         public int GrowCueCount { get; private set; }
+        public int VoiceLineCount { get; private set; }
         float fade, waterFade, changedAt, cueReadyAt, sizeFrom, sizeTo;
         bool pendingSize;
         int changedFrame;
@@ -63,6 +64,17 @@ namespace Underfoot
             sizeTo = accepted; changedAt = Time.unscaledTime; changedFrame = Time.frameCount; pendingSize = true;
         }
 
+        // Pip's synthesised babble plays on the feedback source, so mute and reset cover it.
+        public bool PlayVoice(string caption)
+        {
+            if (Muted || !feedback) return false;
+            var clip = UnderfootGnomeVoice.For(caption);
+            if (!clip) return false;
+            feedback.PlayOneShot(clip, .8f);
+            VoiceLineCount++;
+            return true;
+        }
+
         public void RestoreSpring()
         {
             if (SpringRestored) return;
@@ -73,7 +85,7 @@ namespace Underfoot
         public void ResetFeedback()
         {
             pendingSize = false; cueReadyAt = changedAt = 0;
-            ShrinkCueCount = GrowCueCount = 0;
+            ShrinkCueCount = GrowCueCount = VoiceLineCount = 0;
             SpringRestored = false; waterFade = 0;
             water.Stop(); water.volume = 0; feedback.Stop();
             // Preserve the listener's mute preference across reset.

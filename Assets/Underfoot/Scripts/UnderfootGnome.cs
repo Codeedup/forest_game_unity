@@ -6,6 +6,7 @@ namespace Underfoot
     {
         public UnderfootPlayer player;
         public UnderfootSpring spring;
+        public UnderfootSoundscape sound;
         public Transform model, pointingArm;
         public GameObject choicePanel;
         public float interactionRange = .23f, maximumHeight = .19f;
@@ -17,7 +18,11 @@ namespace Underfoot
         float dialogueUntil;
         Quaternion idleRotation;
 
-        void Awake() { idleRotation = model.rotation; }
+        void Awake()
+        {
+            idleRotation = model.rotation;
+            if (!sound) sound = FindFirstObjectByType<UnderfootSoundscape>();
+        }
 
         void Update()
         {
@@ -70,7 +75,11 @@ namespace Underfoot
             Say("Pip: There it goes. The roots can drink again.\nCome in; there is warm tea waiting.", 12);
         }
 
-        void Say(string text, float seconds) { Dialogue = text; dialogueUntil = Time.time + seconds; }
+        void Say(string text, float seconds)
+        {
+            Dialogue = text; dialogueUntil = Time.time + seconds;
+            if (sound) sound.PlayVoice(text);
+        }
 
         public void ResetGnome()
         {
