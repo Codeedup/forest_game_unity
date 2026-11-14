@@ -26,17 +26,17 @@ namespace Underfoot.Editor
             AssetDatabase.Refresh();
             palette.Clear();
             Colour("Moss", "65774A"); Colour("Sage", "8FA66D"); Colour("DarkMoss", "435C3B");
-            Colour("Earth", "766448"); Colour("Path", "B49D73"); Colour("Bark", "70503C"); Colour("BarkLight", "94704D");
+            Colour("Earth", "766448"); Colour("Path", "B49D73"); Colour("Bark", "634A3C"); Colour("BarkLight", "8A6B52");
             Colour("Plum", "735574"); Colour("PlumLight", "9B7895"); Colour("FaceShadow", "39313B");
             Colour("Skin", "DBB392"); Colour("Boot", "493B35"); Colour("Cream", "E7D9B7");
             Colour("Hat", "B3634C"); Colour("Coat", "59807B"); Colour("Gold", "DDAE53");
             Colour("Leaf", "B5964E"); Colour("LeafVein", "D9BE72"); Colour("Stone", "929386");
-            Colour("Wood", "A97A4C"); Colour("Interior", "C39B6C"); Colour("Rug", "986B63");
+            Colour("Wood", "9E7A5A"); Colour("Interior", "C39B6C"); Colour("Rug", "986B63");
             Colour("Amber", "FFCE79", true); Colour("Pollen", "F5DDA1", true);
             Colour("BarkCrease", "513D31"); Colour("Lichen", "A5B48A"); Colour("RoseCap", "BB817B");
             Colour("LeafSpeckle", "9C8547"); Colour("Dew", "C5DCC3");
-            Colour("SpringWater", "78B9B2", true); Colour("WaitingAmber", "806945", true);
-            Colour("SquirrelFur", "B77B53"); Colour("SquirrelTail", "A46A46");
+            Colour("SpringWater", "5FAAAE", true); Colour("WaitingAmber", "806945", true);
+            Colour("SquirrelFur", "B77B53"); Colour("SquirrelTail", "8F5E48");
             Colour("Canopy", "5E7A45"); Colour("CanopyLight", "A3A75A"); Colour("ForestFloor", "3A4A30");
             Colour("FarTrunk", "3E3A3A"); Colour("FarCanopy", "34483F"); Colour("FarCanopyDeep", "2A3A3A");
             Colour("Clover", "6E9149"); Colour("MossLight", "7D9150"); Colour("EarthPatch", "806A4C"); Colour("PathWorn", "9C8661");
@@ -45,9 +45,11 @@ namespace Underfoot.Editor
             Colour("Scarf", "D0703F"); Colour("Rosy", "E2867C"); Colour("SquirrelBelly", "EBD3AE");
             Colour("EyeGloss", "2B211E"); Colour("Glint", "FFF4DC", true); Colour("LanternGlass", "FFC870", true);
             palette["EyeGloss"].SetFloat("_Glossiness", .92f);
-            palette["Glint"].SetColor("_EmissionColor", Hex("FFF4DC") * 1.3f);
+            palette["Glint"].SetColor("_EmissionColor", Hex("FFF4DC") * 2.2f);
             palette["LanternGlass"].SetColor("_EmissionColor", Hex("FFC870") * 2.4f);
             Colour("GlowMoss", "8FF5C8", true); palette["GlowMoss"].SetColor("_EmissionColor", Hex("8FF5C8") * 2.2f);
+            Colour("DryBed", "5A4636"); Colour("FaceSkin", "E4BE9C", true);
+            palette["FaceSkin"].SetColor("_EmissionColor", Hex("E4BE9C") * .22f);
             Colour("RootWood", "7A5236"); Colour("Ember", "FF8A3D", true); Colour("DuskGlass", "8E9AD6", true);
             palette["Ember"].SetColor("_EmissionColor", Hex("FF8A3D") * 2.4f);
             palette["DuskGlass"].SetColor("_EmissionColor", Hex("8E9AD6") * .7f);
@@ -203,6 +205,9 @@ namespace Underfoot.Editor
             Tube("Lantern hook", home, new Vector3(-.19f, .15f, -.09f), new Vector3(-.19f, .22f, -.09f), .006f, "Bark");
             Shape("Lantern glow", PrimitiveType.Cylinder, home, new Vector3(-.19f, .16f, -.09f), new Vector3(.035f, .024f, .035f), "WaitingAmber");
             MeshShape("Lantern cap", cap, home, new Vector3(-.19f, .185f, -.09f), new Vector3(.05f, .04f, .05f), "Bark");
+            // A soft halo by the door that blooms as the spring restores the warmth (driven with the lantern glass).
+            Shape("Doorway glow", PrimitiveType.Quad, home, new Vector3(-.19f, .16f, -.1f), new Vector3(.3f, .3f, 1), "GlowHearth")
+                .GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
             PointLight("Lantern - warm welcome", home, new Vector3(-.16f, .14f, -.06f), .16f, .5f);
             PointLight("Interior hearth glow", home, new Vector3(.05f, .06f, .32f), .16f, .48f);
             HomeInterior(home);
@@ -262,7 +267,7 @@ namespace Underfoot.Editor
                 else
                     for (int j = 0; j < 3; j++)
                     {
-                        var fern = MeshShape("Fern leaf", leafMesh, parent, p + new Vector3(j * .06f, .02f, 0), Vector3.one * .27f, i % 2 == 0 ? "Sage" : "DarkMoss");
+                        var fern = MeshShape("Fern leaf", leafMesh, parent, p + new Vector3(j * .06f, .02f, 0), Vector3.one * .27f, i % 2 == 0 ? "Canopy" : "MossLight");
                         fern.localRotation = Quaternion.Euler(-40 - j * 9, i * 51 + j * 65, 0);
                     }
             }
@@ -314,14 +319,14 @@ namespace Underfoot.Editor
                 Shape("Deep hood", PrimitiveType.Sphere, body, new Vector3(0, .805f, -.006f), new Vector3(.38f, .38f, .34f), "Plum");
                 MeshShape("Drooping hood fold", hoodFold, body, Vector3.zero, Vector3.one, "Plum");
                 Shape("Shadow within hood", PrimitiveType.Sphere, body, new Vector3(0, .79f, .127f), new Vector3(.234f, .248f, .04f), "FaceShadow");
-                Shape("Small visible face", PrimitiveType.Sphere, body, new Vector3(0, .778f, .149f), new Vector3(.138f, .13f, .032f), "Skin");
+                Shape("Small visible face", PrimitiveType.Sphere, body, new Vector3(0, .778f, .149f), new Vector3(.138f, .13f, .032f), "FaceSkin");
                 Shape("Cloak clasp", PrimitiveType.Sphere, body, new Vector3(0, .64f, .17f), Vector3.one * .047f, "Gold");
                 Shape("Satchel", PrimitiveType.Sphere, body, new Vector3(.19f, .34f, -.04f), new Vector3(.18f, .22f, .12f), "Wood");
                 // A hint of a face: two warm glints in the hood shadow.
                 for (int side = -1; side <= 1; side += 2)
                 {
                     Shape("Shy eye", PrimitiveType.Sphere, body, new Vector3(side * .03f, .787f, .161f), new Vector3(.024f, .028f, .012f), "EyeGloss");
-                    Shape("Eye glint", PrimitiveType.Sphere, body, new Vector3(side * .026f, .794f, .168f), Vector3.one * .009f, "Glint");
+                    Shape("Eye glint", PrimitiveType.Sphere, body, new Vector3(side * .026f, .794f, .168f), Vector3.one * .012f, "Glint");
                 }
                 Shape("Warm knitted scarf", PrimitiveType.Sphere, body, new Vector3(0, .662f, .012f), new Vector3(.3f, .075f, .29f), "Scarf");
                 Tube("Scarf tail", body, new Vector3(.06f, .65f, .13f), new Vector3(.085f, .5f, .165f), .03f, "Scarf");
@@ -405,8 +410,8 @@ namespace Underfoot.Editor
                     for (int j = 0; j < 5; j++)
                     {
                         float a = j / 5f, b = (j + 1) / 5f;
-                        Tube("Raised branching vein", root, LeafPoint(z + a * .14f, side * a * .92f) + Vector3.up * .002f,
-                            LeafPoint(z + b * .14f, side * b * .92f) + Vector3.up * .002f, .0025f * (1 - a * .5f), "LeafVein");
+                        Tube("Raised branching vein", root, LeafPoint(z + a * .14f + a * a * .05f, side * a * .92f) + Vector3.up * .002f,
+                            LeafPoint(z + b * .14f + b * b * .05f, side * b * .92f) + Vector3.up * .002f, .0025f * (1 - a * .65f), "LeafVein");
                     }
             }
             CombineDecoration(root, "LeafPrimaryVeins");
@@ -440,7 +445,7 @@ namespace Underfoot.Editor
                 Vector3 p = LeafPoint(-.38f + (i % 7) * .13f, i < 7 ? -.73f : .68f);
                 Shape("Leaf freckle", PrimitiveType.Sphere, root, p + Vector3.up * .001f, new Vector3(.01f, .001f, .017f), "LeafSpeckle");
                 if (i % 2 == 0)
-                    Shape("Morning dew bead", PrimitiveType.Sphere, root, p + Vector3.up * .0055f, new Vector3(.011f, .008f, .011f), "Dew");
+                    Shape("Morning dew bead", PrimitiveType.Sphere, root, p + Vector3.up * .0055f, new Vector3(.017f, .012f, .017f), "Dew");
             }
             CombineDecoration(root, "LeafLace");
             return SavePrefab(root, "LeafLaceAndDew");
@@ -480,13 +485,18 @@ namespace Underfoot.Editor
                 for (int line = 0; line < 12; line++)
                 {
                     float a = line * Mathf.PI / 6;
-                    Vector3 radial = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
-                    for (int j = 0; j < 4; j++)
+                    // Gently wandering ridges, so the roots read as grown wood rather than planks.
+                    Vector3 Ridge(float u)
                     {
-                        Vector3 from = points[j] + rotations[j] * radial * (radii[j] + .0018f);
-                        Vector3 to = points[j + 1] + rotations[j + 1] * radial * (radii[j + 1] + .0018f);
-                        Tube("Long flowing bark ridge", root, from, to, .0026f - j * .0005f, line % 3 == 0 ? "BarkCrease" : "BarkLight");
+                        int j = Mathf.Min(3, Mathf.FloorToInt(u)); float f = u - j;
+                        float wander = a + .2f * Mathf.Sin(u * 2.7f + line * 1.9f);
+                        Vector3 radial = new Vector3(Mathf.Cos(wander), 0, Mathf.Sin(wander));
+                        return Vector3.Lerp(points[j], points[j + 1], f) +
+                            Quaternion.Slerp(rotations[j], rotations[j + 1], f) * radial * (Mathf.Lerp(radii[j], radii[j + 1], f) + .0018f);
                     }
+                    for (int step = 0; step < 12; step++)
+                        Tube("Long flowing bark ridge", root, Ridge(step / 3f), Ridge((step + 1) / 3f), .0026f - step / 3f * .0005f,
+                            line % 3 == 0 ? "BarkCrease" : "BarkLight");
                 }
             }
             Physics.SyncTransforms();
@@ -501,8 +511,8 @@ namespace Underfoot.Editor
                 patch.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
                 if (i % 3 == 0)
                 {
-                    Shape("Cream shelf fungus rim", PrimitiveType.Sphere, root, p + hit.normal * .012f, new Vector3(.055f, .008f, .033f), "Cream");
-                    Shape("Ochre shelf fungus", PrimitiveType.Sphere, root, p + hit.normal * .012f + Vector3.up * .004f, new Vector3(.052f, .009f, .032f), "Hat");
+                    Shape("Cream shelf fungus rim", PrimitiveType.Sphere, root, p + hit.normal * .012f, new Vector3(.08f, .011f, .048f), "Cream");
+                    Shape("Ochre shelf fungus", PrimitiveType.Sphere, root, p + hit.normal * .012f + Vector3.up * .004f, new Vector3(.076f, .012f, .046f), "Hat");
                 }
                 if (i % 4 == 0)
                 {
@@ -782,7 +792,7 @@ namespace Underfoot.Editor
             for (int i = 0; i < 14; i++)
             {
                 float z = -.9f + i * .16f, x = Mathf.Sin(i * .7f) * .025f;
-                float w = .12f + Mathf.Sin(i * .6f) * .018f;
+                float w = (.12f + Mathf.Sin(i * .6f) * .018f) * Mathf.Clamp01(.35f + Mathf.Min(i, 13 - i) * .33f); // soft, tapered ends
                 v.Add(new Vector3(x - w, .0012f, z)); v.Add(new Vector3(x + w, .0012f, z));
                 if (i > 0) { int n = i * 2; t.AddRange(new[] { n - 2, n, n + 1, n - 2, n + 1, n - 1 }); }
             }

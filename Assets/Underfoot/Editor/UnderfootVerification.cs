@@ -304,7 +304,7 @@ namespace Underfoot.Editor
                 {
                     float until = Time.time + 9;
                     while (squirrel.transform.position.x < .45f && Time.time < until) yield return null;
-                    p.orbit.yaw = 65; p.orbit.pitch = -5;
+                    p.orbit.yaw = 35; p.orbit.pitch = 55;
                     Capture(p.orbit, "07-squirrel-crossing");
                     p.orbit.yaw = 0; p.orbit.pitch = 20;
                 }

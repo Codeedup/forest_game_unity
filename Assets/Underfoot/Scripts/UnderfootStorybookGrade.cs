@@ -12,7 +12,7 @@ namespace Underfoot
         [Range(0, 3)] public float bloomThreshold = 1.2f;
         [Range(0, 2)] public float bloomIntensity = .55f;
         [Header("Colour")]
-        [Range(0, 1)] public float splitToning = .4f;
+        [Range(0, 1)] public float splitToning = .32f;
         public Color highlightTint = new Color(1f, .92f, .8f);
         public Color shadowTint = new Color(.62f, .66f, .95f);
         [Range(-.5f, .8f)] public float saturation = .1f;

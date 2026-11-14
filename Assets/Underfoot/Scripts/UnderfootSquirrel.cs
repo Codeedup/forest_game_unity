@@ -14,8 +14,21 @@ namespace Underfoot
         public int RecoveryCount { get; private set; }
         float patrolTime, reactionUntil, readyAt;
         Quaternion tailRest;
+        Renderer[] looks;
 
-        void Awake() { tailRest = tail.localRotation; ResetPatrol(); }
+        void Awake() { tailRest = tail.localRotation; looks = GetComponentsInChildren<Renderer>(); ResetPatrol(); }
+
+        // Visual only: she has no collider, so hide her while the camera is inside her silhouette.
+        void LateUpdate()
+        {
+            var view = Camera.main;
+            if (!view || looks.Length == 0) return;
+            var bounds = looks[0].bounds;
+            foreach (var look in looks) bounds.Encapsulate(look.bounds);
+            bounds.Expand(.02f);
+            bool inside = bounds.Contains(view.transform.position);
+            foreach (var look in looks) look.enabled = !inside;
+        }
 
         void Update()
         {

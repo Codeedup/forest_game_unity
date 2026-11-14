@@ -20,7 +20,7 @@ namespace Underfoot.Editor
             var routes = Group("Two paths to one spring", world);
             spring.rootwaySeeds = RoutePath(routes, "Quiet rootway", spring.rootwayPath);
             spring.squirrelSeeds = RoutePath(routes, "Squirrel clearing", spring.squirrelPath);
-            Sign(routes, new Vector3(-.15f, 0, .29f), "< ROOTWAY", .16f);
+            Sign(routes, new Vector3(-.42f, 0, .30f), "< ROOTWAY", .16f); // clear of Pip's hat in the meeting view
             Sign(routes, new Vector3(.14f, 0, .27f), "SQUIRREL >", .12f);
             Sign(routes, new Vector3(.13f, 0, .99f), "SPRING", .095f);
 
@@ -72,7 +72,7 @@ namespace Underfoot.Editor
                 {
                     Vector3 at = Vector3.Lerp(points[i], points[i + 1], (j + .5f) / 3);
                     var bed = Shape("Shallow dry channel", PrimitiveType.Sphere, channel, at + Vector3.up * .002f,
-                        new Vector3(.066f, .005f, delta.magnitude / 3 + .017f), "Earth");
+                        new Vector3(.066f, .005f, delta.magnitude / 3 + .017f), "DryBed");
                     bed.rotation = Quaternion.LookRotation(delta);
                     // Each segment is an unscaled group: water, ripples and glow-moss appear together, in order.
                     var segment = Group("Returning water", channel);
@@ -94,6 +94,8 @@ namespace Underfoot.Editor
                 }
             }
             spring.waterSegments = flow.ToArray();
+            // A little pool trapped behind the twig makes the blockage readable before it is cleared.
+            Shape("Water trapped behind the twig", PrimitiveType.Sphere, channel, new Vector3(.025f, .0045f, 1.052f), new Vector3(.05f, .003f, .034f), "SpringWater");
             Shape("Spring source stone", PrimitiveType.Sphere, channel, new Vector3(.025f, .018f, 1.09f), new Vector3(.09f, .035f, .045f), "Stone");
             for (int i = 0; i < 3; i++)
             {
@@ -111,7 +113,10 @@ namespace Underfoot.Editor
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
             spring.twig = body;
             spring.homeLights = demo.home.GetComponentsInChildren<Light>();
-            spring.lanternGlass = new[] { demo.home.Find("Lantern glow").GetComponent<Renderer>(), demo.home.Find("Amber round window").GetComponent<Renderer>() };
+            // The hearth embers and the doorway halo stay dim until the spring flows.
+            spring.lanternGlass = new[] { demo.home.Find("Lantern glow").GetComponent<Renderer>(), demo.home.Find("Amber round window").GetComponent<Renderer>(),
+                demo.home.Find("Cosy interior - vault, hearth and tea (decoration)/Ember detail").GetComponent<Renderer>(),
+                demo.home.Find("Doorway glow").GetComponent<Renderer>() };
             sound.water.transform.position = spring.interactionPoint.position;
         }
 

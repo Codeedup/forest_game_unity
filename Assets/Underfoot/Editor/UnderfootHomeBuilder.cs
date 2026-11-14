@@ -42,9 +42,6 @@ namespace Underfoot.Editor
             Shape("Hearth embers", PrimitiveType.Sphere, room, new Vector3(.05f, .006f, .372f), new Vector3(.05f, .012f, .03f), "Ember");
             Tube("Hearth log", room, new Vector3(.028f, .011f, .366f), new Vector3(.07f, .015f, .374f), .0055f, "Bark");
             Tube("Hearth log", room, new Vector3(.032f, .016f, .378f), new Vector3(.072f, .011f, .364f), .005f, "BarkLight");
-            var glow = Shape("Hearth glow", PrimitiveType.Quad, room, new Vector3(.05f, .028f, .36f), new Vector3(.11f, .085f, 1), "GlowHearth");
-            glow.localRotation = Quaternion.Euler(0, 180, 0);
-            glow.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
             // Teapot and two cups on the little table: Pip promised tea.
             float top = .0735f; Vector3 table = new Vector3(-.085f, top, .28f);
