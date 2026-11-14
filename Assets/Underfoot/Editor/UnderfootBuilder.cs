@@ -42,6 +42,11 @@ namespace Underfoot.Editor
             Colour("Clover", "6E9149"); Colour("MossLight", "7D9150"); Colour("EarthPatch", "806A4C"); Colour("PathWorn", "9C8661");
             Colour("LeafRust", "B4623A"); Colour("LeafGold", "D2A14A"); Colour("LeafAmber", "C47C3C"); Colour("LeafPlum", "8C5A55");
             Colour("ForgetMeNot", "86AEE8"); Colour("Buttercup", "F0C64A");
+            Colour("Scarf", "D0703F"); Colour("Rosy", "E2867C"); Colour("SquirrelBelly", "EBD3AE");
+            Colour("EyeGloss", "2B211E"); Colour("Glint", "FFF4DC", true); Colour("LanternGlass", "FFC870", true);
+            palette["EyeGloss"].SetFloat("_Glossiness", .92f);
+            palette["Glint"].SetColor("_EmissionColor", Hex("FFF4DC") * 1.3f);
+            palette["LanternGlass"].SetColor("_EmissionColor", Hex("FFC870") * 2.4f);
             Colour("RootWood", "7A5236"); Colour("Ember", "FF8A3D", true); Colour("DuskGlass", "8E9AD6", true);
             palette["Ember"].SetColor("_EmissionColor", Hex("FF8A3D") * 2.4f);
             palette["DuskGlass"].SetColor("_EmissionColor", Hex("8E9AD6") * .7f);
@@ -286,9 +291,20 @@ namespace Underfoot.Editor
                 Shape("Hat brim", PrimitiveType.Sphere, body, new Vector3(0, .86f, 0), new Vector3(.49f, .055f, .4f), "Hat");
                 var beard = MeshShape("Tapering cream beard", cone, body, new Vector3(0, .76f, .12f), new Vector3(.26f, .31f, .20f), "Cream");
                 beard.localRotation = Quaternion.Euler(180, 0, 0);
-                Shape("Round nose", PrimitiveType.Sphere, body, new Vector3(0, .78f, .18f), new Vector3(.105f, .09f, .1f), "Skin");
+                Shape("Bulbous nose", PrimitiveType.Sphere, body, new Vector3(0, .772f, .186f), new Vector3(.125f, .112f, .11f), "Skin");
                 for (int side = -1; side <= 1; side += 2)
-                    Shape("Kind dark eye", PrimitiveType.Sphere, body, new Vector3(side * .062f, .81f, .146f), Vector3.one * .027f, "FaceShadow");
+                {
+                    Shape("Kind dark eye", PrimitiveType.Sphere, body, new Vector3(side * .062f, .81f, .146f), Vector3.one * .03f, "EyeGloss");
+                    Shape("Eye highlight", PrimitiveType.Sphere, body, new Vector3(side * .056f, .817f, .159f), Vector3.one * .01f, "Glint");
+                    Shape("Rosy cheek", PrimitiveType.Sphere, body, new Vector3(side * .078f, .768f, .128f), new Vector3(.05f, .032f, .022f), "Rosy");
+                }
+                // The hat tip curls over with a little bobble.
+                Tube("Curling hat tip", body, new Vector3(.05f, 1.19f, 0), new Vector3(.1f, 1.24f, -.01f), .022f, "Hat");
+                Tube("Curling hat tip", body, new Vector3(.1f, 1.24f, -.01f), new Vector3(.145f, 1.215f, -.02f), .016f, "Hat");
+                Shape("Hat tip bobble", PrimitiveType.Sphere, body, new Vector3(.152f, 1.205f, -.02f), Vector3.one * .038f, "Cream");
+                Shape("Leather belt", PrimitiveType.Cylinder, body, new Vector3(0, .43f, 0), new Vector3(.36f, .016f, .3f), "Boot");
+                Shape("Brass buckle", PrimitiveType.Cube, body, new Vector3(0, .43f, .148f), new Vector3(.055f, .045f, .012f), "Gold");
+                Shape("Buckle hole", PrimitiveType.Cube, body, new Vector3(0, .43f, .154f), new Vector3(.03f, .022f, .004f), "Boot");
             }
             else
             {
@@ -298,6 +314,23 @@ namespace Underfoot.Editor
                 Shape("Small visible face", PrimitiveType.Sphere, body, new Vector3(0, .778f, .149f), new Vector3(.138f, .13f, .032f), "Skin");
                 Shape("Cloak clasp", PrimitiveType.Sphere, body, new Vector3(0, .64f, .17f), Vector3.one * .047f, "Gold");
                 Shape("Satchel", PrimitiveType.Sphere, body, new Vector3(.19f, .34f, -.04f), new Vector3(.18f, .22f, .12f), "Wood");
+                // A hint of a face: two warm glints in the hood shadow.
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    Shape("Shy eye", PrimitiveType.Sphere, body, new Vector3(side * .03f, .787f, .161f), new Vector3(.024f, .028f, .012f), "EyeGloss");
+                    Shape("Eye glint", PrimitiveType.Sphere, body, new Vector3(side * .026f, .794f, .168f), Vector3.one * .009f, "Glint");
+                }
+                Shape("Warm knitted scarf", PrimitiveType.Sphere, body, new Vector3(0, .662f, .012f), new Vector3(.3f, .075f, .29f), "Scarf");
+                Tube("Scarf tail", body, new Vector3(.06f, .65f, .13f), new Vector3(.085f, .5f, .165f), .03f, "Scarf");
+                Shape("Scarf tail fringe", PrimitiveType.Sphere, body, new Vector3(.086f, .49f, .166f), new Vector3(.065f, .02f, .03f), "Gold");
+                // Running stitches around the cloak hem.
+                for (int i = 0; i < 18; i++)
+                {
+                    float a = i * Mathf.PI * 2 / 18;
+                    var stitch = Shape("Hem stitch", PrimitiveType.Sphere, body, new Vector3(Mathf.Cos(a) * .262f, .165f, Mathf.Sin(a) * .219f),
+                        new Vector3(.035f, .009f, .01f), "Cream");
+                    stitch.localRotation = Quaternion.Euler(0, -a * Mathf.Rad2Deg + 90, 0);
+                }
             }
             feet = new Transform[2]; arms = new Transform[2]; hand = null;
             for (int i = 0; i < 2; i++)
@@ -309,6 +342,15 @@ namespace Underfoot.Editor
                 Shape("Sleeve", PrimitiveType.Capsule, arms[i], new Vector3(side * .038f, -.115f, 0), new Vector3(.1f, .12f, .10f), gnome ? "Coat" : "Plum");
                 var palm = Shape("Hand", PrimitiveType.Sphere, arms[i], new Vector3(side * .05f, -.24f, .015f), Vector3.one * .085f, "Skin");
                 if (i == 1) hand = palm;
+                if (!gnome && i == 0)
+                {
+                    // A small hand lantern: emissive glass and the storybook bloom, no real-time light.
+                    var lantern = Group("Hand lantern", arms[i]); lantern.localPosition = new Vector3(side * .05f, -.27f, .03f); lantern.localScale = Vector3.one * 1.3f;
+                    Tube("Lantern bail", lantern, new Vector3(0, .035f, 0), new Vector3(0, -.005f, 0), .005f, "Bark");
+                    MeshShape("Lantern roof", cone, lantern, new Vector3(0, -.03f, 0), new Vector3(.075f, .035f, .075f), "Bark");
+                    Shape("Lantern glow glass", PrimitiveType.Cylinder, lantern, new Vector3(0, -.066f, 0), new Vector3(.05f, .036f, .05f), "LanternGlass");
+                    Shape("Lantern base", PrimitiveType.Cylinder, lantern, new Vector3(0, -.104f, 0), new Vector3(.064f, .006f, .064f), "Bark");
+                }
             }
             return body;
         }

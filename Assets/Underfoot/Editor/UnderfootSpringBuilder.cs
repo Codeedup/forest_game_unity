@@ -142,27 +142,41 @@ namespace Underfoot.Editor
         static UnderfootSquirrel Squirrel(Transform parent)
         {
             var animal = Group("Hazel - curious woodland squirrel", parent);
-            Shape("Pear shaped russet body", PrimitiveType.Sphere, animal, new Vector3(0, .115f, 0), new Vector3(.15f, .20f, .20f), "SquirrelFur");
-            Shape("Warm cream chest", PrimitiveType.Sphere, animal, new Vector3(0, .115f, .077f), new Vector3(.091f, .14f, .045f), "Cream");
-            Shape("Round squirrel head", PrimitiveType.Sphere, animal, new Vector3(0, .225f, .066f), new Vector3(.13f, .12f, .13f), "SquirrelFur");
-            Shape("Soft muzzle", PrimitiveType.Sphere, animal, new Vector3(0, .205f, .122f), new Vector3(.075f, .048f, .055f), "Cream");
-            Shape("Small hazelnut nose", PrimitiveType.Sphere, animal, new Vector3(0, .218f, .148f), new Vector3(.024f, .018f, .014f), "Boot");
+            // Soft pear-shaped body: a round haunch, a smaller chest and a pale belly.
+            Shape("Round russet haunch", PrimitiveType.Sphere, animal, new Vector3(0, .085f, -.012f), new Vector3(.155f, .16f, .175f), "SquirrelFur");
+            Shape("Upper russet chest", PrimitiveType.Sphere, animal, new Vector3(0, .155f, .03f), new Vector3(.12f, .15f, .13f), "SquirrelFur");
+            Shape("Pale belly", PrimitiveType.Sphere, animal, new Vector3(0, .12f, .068f), new Vector3(.095f, .15f, .06f), "SquirrelBelly");
+            Shape("Round squirrel head", PrimitiveType.Sphere, animal, new Vector3(0, .232f, .07f), new Vector3(.135f, .125f, .13f), "SquirrelFur");
+            Shape("Soft muzzle", PrimitiveType.Sphere, animal, new Vector3(0, .212f, .122f), new Vector3(.07f, .05f, .055f), "SquirrelBelly");
+            Shape("Small hazelnut nose", PrimitiveType.Sphere, animal, new Vector3(0, .224f, .149f), new Vector3(.022f, .016f, .013f), "Boot");
             foreach (int side in new[] { -1, 1 })
             {
-                Shape("Bright curious eye", PrimitiveType.Sphere, animal, new Vector3(side * .048f, .242f, .109f), new Vector3(.022f, .026f, .015f), "Boot");
-                Shape("Eye catchlight", PrimitiveType.Sphere, animal, new Vector3(side * .046f, .247f, .116f), Vector3.one * .006f, "Cream");
-                var ear = MeshShape("Tufted squirrel ear", cone, animal, new Vector3(side * .043f, .264f, .058f), new Vector3(.045f, .075f, .032f), "SquirrelFur");
-                ear.localRotation = Quaternion.Euler(-7, 0, side * -12);
+                Shape("Cheek fluff", PrimitiveType.Sphere, animal, new Vector3(side * .05f, .2f, .094f), new Vector3(.036f, .028f, .03f), "SquirrelBelly");
+                Shape("Large glossy eye", PrimitiveType.Sphere, animal, new Vector3(side * .044f, .246f, .112f), new Vector3(.03f, .035f, .02f), "EyeGloss");
+                Shape("Eye catchlight", PrimitiveType.Sphere, animal, new Vector3(side * .04f, .254f, .121f), Vector3.one * .009f, "Glint");
+                Shape("Small eye sparkle", PrimitiveType.Sphere, animal, new Vector3(side * .048f, .24f, .12f), Vector3.one * .004f, "Glint");
+                var ear = Shape("Small rounded ear", PrimitiveType.Sphere, animal, new Vector3(side * .044f, .286f, .058f), new Vector3(.035f, .047f, .016f), "SquirrelFur");
+                ear.localRotation = Quaternion.Euler(-8, side * 18, side * -14);
+                Shape("Pink inner ear", PrimitiveType.Sphere, animal, new Vector3(side * .044f, .284f, .065f), new Vector3(.02f, .03f, .006f), "Rosy")
+                    .localRotation = ear.localRotation;
+                var tuft = MeshShape("Ear tuft", cone, animal, new Vector3(side * .047f, .305f, .056f), new Vector3(.014f, .028f, .012f), "SquirrelTail");
+                tuft.localRotation = Quaternion.Euler(-6, 0, side * -16);
                 Shape("Little hind paw", PrimitiveType.Sphere, animal, new Vector3(side * .056f, .018f, .033f), new Vector3(.049f, .032f, .09f), "SquirrelTail");
-                Tube("Tucked forepaw", animal, new Vector3(side * .053f, .153f, .061f), new Vector3(side * .029f, .124f, .112f), .015f, "SquirrelTail");
+                Shape("Tucked forepaw", PrimitiveType.Sphere, animal, new Vector3(side * .03f, .14f, .1f), new Vector3(.028f, .045f, .03f), "SquirrelTail")
+                    .localRotation = Quaternion.Euler(-35, 0, side * 25);
             }
-            Shape("Acorn between paws", PrimitiveType.Sphere, animal, new Vector3(0, .125f, .116f), new Vector3(.035f, .042f, .033f), "Gold");
+            Shape("Acorn between paws", PrimitiveType.Sphere, animal, new Vector3(0, .128f, .118f), new Vector3(.033f, .04f, .031f), "Gold");
+            Shape("Acorn cap", PrimitiveType.Sphere, animal, new Vector3(0, .146f, .118f), new Vector3(.036f, .016f, .034f), "Bark");
             var tail = Group("Large curled brush tail", animal);
-            var mesh = SaveMesh("SquirrelBrushTail", RootMesh(new[] { new Vector3(0, .06f, -.065f), new Vector3(0, .13f, -.17f),
-                new Vector3(0, .29f, -.19f), new Vector3(0, .365f, -.13f), new Vector3(0, .30f, -.075f) }, new[] { .035f, .078f, .092f, .073f, .025f }));
-            MeshShape("Soft russet tail silhouette", mesh, tail, Vector3.zero, Vector3.one, "SquirrelTail");
-            for (int i = 0; i < 5; i++)
-                Tube("Tail fur sweep", tail, new Vector3(-.035f + i * .017f, .19f, -.245f), new Vector3(-.025f + i * .012f, .33f, -.19f), .004f, "SquirrelFur");
+            // A smooth S-curve: up the back, over the head, curling forwards and under at the tip.
+            var spine = new[] { new Vector3(0, .05f, -.075f), new Vector3(0, .1f, -.15f), new Vector3(0, .18f, -.2f), new Vector3(0, .27f, -.21f),
+                new Vector3(0, .345f, -.175f), new Vector3(0, .385f, -.11f), new Vector3(0, .38f, -.05f), new Vector3(0, .345f, -.02f), new Vector3(0, .31f, -.035f) };
+            var mesh = SaveMesh("SquirrelBrushTail", RootMesh(spine, new[] { .028f, .055f, .078f, .09f, .088f, .078f, .062f, .044f, .02f }));
+            MeshShape("Soft russet tail", mesh, tail, Vector3.zero, Vector3.one, "SquirrelTail");
+            for (int i = 1; i < spine.Length - 1; i++)
+                Shape("Tail fluff", PrimitiveType.Sphere, tail, spine[i] + new Vector3(0, .012f, -.02f) * Mathf.Sign(.3f - spine[i].y),
+                    new Vector3(.11f, .08f, .08f) * (.6f + Mathf.Sin(i / 8f * Mathf.PI) * .55f), "SquirrelFur");
+            Shape("Pale tail tip", PrimitiveType.Sphere, tail, spine[spine.Length - 1], new Vector3(.05f, .04f, .04f), "SquirrelBelly");
             var squirrel = animal.gameObject.AddComponent<UnderfootSquirrel>(); squirrel.tail = tail;
             return squirrel;
         }

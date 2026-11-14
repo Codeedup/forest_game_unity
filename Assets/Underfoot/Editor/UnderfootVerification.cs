@@ -84,6 +84,21 @@ namespace Underfoot.Editor
                 player.transform.position = new Vector3(-.58f, .004f, -.35f);
                 player.orbit.yaw = 15; player.orbit.pitch = 10;
                 Capture(player.orbit, "08-miniature-meadow");
+                // Character portraits: the wanderer's face and lantern, and Hazel in profile.
+                player.transform.position = new Vector3(-.62f, .004f, -.3f);
+                player.body.rotation = Quaternion.identity;
+                player.orbit.yaw = 160; player.orbit.pitch = 6;
+                Capture(player.orbit, "09-wanderer-portrait");
+                // Stage Hazel for one frame only; her patrol recomputes her position on the next Update.
+                demo.squirrel.transform.SetPositionAndRotation(new Vector3(.2f, 0, .76f), Quaternion.Euler(0, 200, 0));
+                demo.ChangeSize(.43f); // about 30 cm, so her whole face and tail fit the frame
+                player.transform.position = new Vector3(-.02f, .004f, .4f);
+                player.orbit.yaw = 22; player.orbit.pitch = 8;
+                Capture(player.orbit, "10b-routes-overview");
+                player.transform.position = new Vector3(.2f, .004f, .42f);
+                player.orbit.yaw = 0; player.orbit.pitch = 4;
+                player.body.gameObject.SetActive(false); // portrait of Hazel alone
+                try { Capture(player.orbit, "10-hazel-closeup"); } finally { player.body.gameObject.SetActive(true); }
                 var samples = new float[1024];
                 AudioListener.GetOutputData(samples, 0);
                 float energy = 0;
