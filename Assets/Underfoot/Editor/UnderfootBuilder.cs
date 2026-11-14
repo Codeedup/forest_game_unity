@@ -89,7 +89,7 @@ namespace Underfoot.Editor
             var camObj = new GameObject("Third-person camera", typeof(Camera), typeof(AudioListener), typeof(UnderfootCamera));
             camObj.tag = "MainCamera";
             var camera = camObj.GetComponent<Camera>();
-            camera.fieldOfView = 55; camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Hex("B6C8B2");
+            camera.fieldOfView = 55; camera.clearFlags = CameraClearFlags.Skybox; camera.backgroundColor = Hex(FogHex);
             camera.allowHDR = true;
             var orbit = camObj.GetComponent<UnderfootCamera>(); orbit.player = player; player.orbit = orbit;
             orbit.Frame();
@@ -128,18 +128,28 @@ namespace Underfoot.Editor
 
         static void Lighting()
         {
-            RenderSettings.skybox = null;
+            // Golden hour turning to dusk: a low amber sun, cool lavender fill and blue-green atmosphere.
+            string skyPath = Root + "/Materials/DuskSky.mat";
+            var sky = AssetDatabase.LoadAssetAtPath<Material>(skyPath);
+            if (!sky) { sky = new Material(Shader.Find("Underfoot/Dusk Sky")); AssetDatabase.CreateAsset(sky, skyPath); }
+            sky.shader = Shader.Find("Underfoot/Dusk Sky");
+            sky.SetColor("_Zenith", Hex("2E3462")); sky.SetColor("_Upper", Hex("7A73A6")); sky.SetColor("_Horizon", Hex("F2A97E"));
+            sky.SetColor("_Ground", Hex(FogHex)); sky.SetColor("_SunGlow", Hex("FFB866"));
+            EditorUtility.SetDirty(sky);
+            RenderSettings.skybox = sky;
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = Hex("B5BCA2");
-            RenderSettings.ambientEquatorColor = Hex("A6AD8C");
-            RenderSettings.ambientGroundColor = Hex("756953");
-            RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = Hex("B6C8B2"); RenderSettings.fogStartDistance = 8; RenderSettings.fogEndDistance = 24;
-            var sun = new GameObject("Late afternoon sun", typeof(Light)).GetComponent<Light>();
-            sun.type = LightType.Directional; sun.color = Hex("FFE0AA"); sun.intensity = 1.13f;
-            sun.shadows = LightShadows.Soft; sun.shadowBias = .015f; sun.shadowNormalBias = .025f;
-            sun.transform.rotation = Quaternion.Euler(48, -32, 0);
+            RenderSettings.ambientSkyColor = Hex("8C88B8");
+            RenderSettings.ambientEquatorColor = Hex("B98E86");
+            RenderSettings.ambientGroundColor = Hex("3E4A33");
+            RenderSettings.fog = true; RenderSettings.fogMode = FogMode.ExponentialSquared;
+            RenderSettings.fogColor = Hex(FogHex); RenderSettings.fogDensity = .072f;
+            var sun = new GameObject("Low golden-hour sun", typeof(Light)).GetComponent<Light>();
+            sun.type = LightType.Directional; sun.color = Hex("FFB56E"); sun.intensity = 1.55f;
+            sun.shadows = LightShadows.Soft; sun.shadowStrength = .82f; sun.shadowBias = .015f; sun.shadowNormalBias = .025f;
+            sun.transform.rotation = Quaternion.Euler(14, 48, 0);
+            RenderSettings.sun = sun;
         }
+        const string FogHex = "5E7376";
 
         static Transform BuildHome(Transform parent)
         {

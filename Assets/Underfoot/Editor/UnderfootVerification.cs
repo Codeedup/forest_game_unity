@@ -162,6 +162,11 @@ namespace Underfoot.Editor
             Require(!demo.gnome.Interact() && !demo.gnome.Choose(UnderfootSpring.Route.Rootway) && !spring.ClearTwig(),
                 "Human-scale or distant interaction cannot start the quest or clear the twig");
             Capture(p.orbit, "01-normal");
+            float framing = p.orbit.distanceInHeights;
+            p.orbit.distanceInHeights = 4.2f; p.orbit.pitch = 9; p.orbit.yaw = -28;
+            Capture(p.orbit, "00-dusk-wide");
+            p.orbit.distanceInHeights = framing; p.orbit.pitch = 20; p.orbit.yaw = 0;
+            p.orbit.Frame();
             float fullSpeed = p.WalkingSpeed;
             for (int i = 19; i >= 0; i--) { demo.ChangeSize(i / 20f); yield return null; }
             pause = Pause(.45f); while (pause.MoveNext()) yield return null;
