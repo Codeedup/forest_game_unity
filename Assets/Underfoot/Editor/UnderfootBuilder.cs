@@ -47,10 +47,13 @@ namespace Underfoot.Editor
             palette["EyeGloss"].SetFloat("_Glossiness", .92f);
             palette["Glint"].SetColor("_EmissionColor", Hex("FFF4DC") * 1.3f);
             palette["LanternGlass"].SetColor("_EmissionColor", Hex("FFC870") * 2.4f);
+            Colour("GlowMoss", "8FF5C8", true); palette["GlowMoss"].SetColor("_EmissionColor", Hex("8FF5C8") * 2.2f);
             Colour("RootWood", "7A5236"); Colour("Ember", "FF8A3D", true); Colour("DuskGlass", "8E9AD6", true);
             palette["Ember"].SetColor("_EmissionColor", Hex("FF8A3D") * 2.4f);
             palette["DuskGlass"].SetColor("_EmissionColor", Hex("8E9AD6") * .7f);
             palette["GlowHearth"] = Glow("GlowHearth", "FF9A4A", .55f, 0);
+            palette["SpringWater"].shader = Shader.Find("Underfoot/Spring Water");
+            palette["SpringWater"].SetColor("_ShimmerColor", Hex("A8FFF0") * 1.6f);
             palette["SpringWater"].SetFloat("_Glossiness", .8f);
             palette["SpringWater"].SetColor("_EmissionColor", Hex("78B9B2") * .18f);
             palette["WaitingAmber"].SetColor("_EmissionColor", Hex("806945") * .04f);

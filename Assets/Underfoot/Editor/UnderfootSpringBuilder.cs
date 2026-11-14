@@ -74,9 +74,21 @@ namespace Underfoot.Editor
                     var bed = Shape("Shallow dry channel", PrimitiveType.Sphere, channel, at + Vector3.up * .002f,
                         new Vector3(.066f, .005f, delta.magnitude / 3 + .017f), "Earth");
                     bed.rotation = Quaternion.LookRotation(delta);
-                    var water = Shape("Returning water", PrimitiveType.Sphere, channel, at + Vector3.up * .006f,
+                    // Each segment is an unscaled group: water, ripples and glow-moss appear together, in order.
+                    var segment = Group("Returning water", channel);
+                    segment.position = at + Vector3.up * .006f; segment.rotation = bed.rotation;
+                    Shape("Shimmering water", PrimitiveType.Sphere, segment, Vector3.zero,
                         new Vector3(.047f, .004f, delta.magnitude / 3 + .014f), "SpringWater");
-                    water.rotation = bed.rotation; water.gameObject.SetActive(false); flow.Add(water.gameObject);
+                    Vector3 bank = -Vector3.Cross(delta.normalized, Vector3.up) * .043f;
+                    Shape("Channel bank moss", PrimitiveType.Sphere, channel, at + bank + Vector3.up * .004f, new Vector3(.026f, .01f, .03f), "DarkMoss");
+                    for (int k = 0; k < 5; k++)
+                    {
+                        float a = k * 2.4f + i;
+                        var tip = Shape("Glow-moss tip", PrimitiveType.Sphere, segment, Vector3.zero, Vector3.one * (.0028f + (k % 3) * .0006f), "GlowMoss");
+                        tip.position = at + bank + new Vector3(Mathf.Cos(a) * .009f, .0125f + (k % 2) * .0015f, Mathf.Sin(a) * .011f);
+                    }
+                    if ((i * 3 + j) % 4 == 0) Ripples(segment, at + Vector3.up * .0105f);
+                    segment.gameObject.SetActive(false); flow.Add(segment.gameObject);
                     Shape("Channel pebble", PrimitiveType.Sphere, channel, at + Vector3.Cross(delta.normalized, Vector3.up) * .039f + Vector3.up * .008f,
                         new Vector3(.025f, .018f, .03f), "Stone");
                 }
@@ -101,6 +113,28 @@ namespace Underfoot.Editor
             spring.homeLights = demo.home.GetComponentsInChildren<Light>();
             spring.lanternGlass = new[] { demo.home.Find("Lantern glow").GetComponent<Renderer>(), demo.home.Find("Amber round window").GetComponent<Renderer>() };
             sound.water.transform.position = spring.interactionPoint.position;
+        }
+
+        static void Ripples(Transform parent, Vector3 at)
+        {
+            var obj = new GameObject("Ripple rings", typeof(ParticleSystem)); obj.transform.SetParent(parent, true);
+            obj.transform.SetPositionAndRotation(at, Quaternion.identity); obj.transform.localScale = Vector3.one;
+            var ps = obj.GetComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main; main.loop = true; main.playOnAwake = true; main.maxParticles = 4;
+            main.startLifetime = 1.4f; main.startSpeed = 0; main.startSize = .028f;
+            main.simulationSpace = ParticleSystemSimulationSpace.World; main.scalingMode = ParticleSystemScalingMode.Shape;
+            var emission = ps.emission; emission.rateOverTime = 1.6f;
+            var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Sphere; shape.radius = .006f;
+            var growth = ps.sizeOverLifetime; growth.enabled = true; growth.size = new ParticleSystem.MinMaxCurve(1, AnimationCurve.EaseInOut(0, .3f, 1, 1.7f));
+            var fade = ps.colorOverLifetime; fade.enabled = true;
+            var gradient = new Gradient();
+            gradient.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) },
+                new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(.9f, .15f), new GradientAlphaKey(0, 1) });
+            fade.color = gradient;
+            var renderer = obj.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = Glow("GlowRipple", "7FF2E0", .75f, 2); renderer.renderMode = ParticleSystemRenderMode.HorizontalBillboard;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; renderer.receiveShadows = false;
         }
 
         static GameObject RoutePath(Transform parent, string name, Vector3[] points)

@@ -8,11 +8,12 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SpringWater
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: 5e351ec29b893a84e99340df47d0c515, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _EMISSION
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -72,6 +73,8 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _ShimmerScale: 180
+    - _ShimmerSpeed: 2
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -80,5 +83,6 @@ Material:
     m_Colors:
     - _Color: {r: 0.47058824, g: 0.7254902, b: 0.69803923, a: 1}
     - _EmissionColor: {r: 0.08470589, g: 0.13058825, b: 0.12564707, a: 0.18}
+    - _ShimmerColor: {r: 1.0541177, g: 1.6, b: 1.5058824, a: 1.6}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
