@@ -39,6 +39,9 @@ namespace Underfoot.Editor
             Colour("SquirrelFur", "B77B53"); Colour("SquirrelTail", "A46A46");
             Colour("Canopy", "5E7A45"); Colour("CanopyLight", "A3A75A"); Colour("ForestFloor", "3A4A30");
             Colour("FarTrunk", "3E3A3A"); Colour("FarCanopy", "34483F"); Colour("FarCanopyDeep", "2A3A3A");
+            Colour("Clover", "6E9149"); Colour("MossLight", "7D9150"); Colour("EarthPatch", "806A4C"); Colour("PathWorn", "9C8661");
+            Colour("LeafRust", "B4623A"); Colour("LeafGold", "D2A14A"); Colour("LeafAmber", "C47C3C"); Colour("LeafPlum", "8C5A55");
+            Colour("ForgetMeNot", "86AEE8"); Colour("Buttercup", "F0C64A");
             palette["SpringWater"].SetFloat("_Glossiness", .8f);
             palette["SpringWater"].SetColor("_EmissionColor", Hex("78B9B2") * .18f);
             palette["WaitingAmber"].SetColor("_EmissionColor", Hex("806945") * .04f);
@@ -75,6 +78,7 @@ namespace Underfoot.Editor
             Mushroom(world, new Vector3(.89f, 0, .7f), .31f, "Hat");
             Mushroom(world, new Vector3(1.06f, 0, .6f), .19f, "Gold");
             Scatter(world);
+            GroundDressing(world);
             LivingLight(world);
             Boundary(world);
 

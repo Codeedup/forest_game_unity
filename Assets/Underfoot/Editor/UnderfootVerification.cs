@@ -81,6 +81,9 @@ namespace Underfoot.Editor
                 player.transform.position = new Vector3(-.45f, .004f, .70f);
                 player.orbit.yaw = 0; player.orbit.pitch = 8;
                 Capture(player.orbit, "06-bark-and-shelf-fungi");
+                player.transform.position = new Vector3(-.58f, .004f, -.35f);
+                player.orbit.yaw = 15; player.orbit.pitch = 10;
+                Capture(player.orbit, "08-miniature-meadow");
                 var samples = new float[1024];
                 AudioListener.GetOutputData(samples, 0);
                 float energy = 0;

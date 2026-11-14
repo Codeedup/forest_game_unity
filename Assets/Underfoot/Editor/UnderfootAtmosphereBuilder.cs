@@ -99,6 +99,113 @@ namespace Underfoot.Editor
 
         static float Range(System.Random random, float min, float max) => min + (float)random.NextDouble() * (max - min);
 
+        // Walkways, routes, Pip and the home front stay clear so wayfinding is unchanged.
+        static bool OnWalkway(Vector3 p) => p.x > -.55f && p.x < .6f && p.z > -1.05f && p.z < 1.55f;
+
+        // Finer test for tiny flowers: clear of the footpath, both routes, Pip, the twig and the home front.
+        static readonly Vector3[][] keepClear = {
+            new[] { new Vector3(0, 0, -.95f), new Vector3(0, 0, 1.5f) },
+            new[] { new Vector3(-.30f, 0, .27f), new Vector3(-.30f, 0, .57f), new Vector3(-.17f, 0, .67f), new Vector3(-.17f, 0, .81f), new Vector3(-.04f, 0, .91f) },
+            new[] { new Vector3(.20f, 0, .28f), new Vector3(.24f, 0, .43f), new Vector3(.24f, 0, .53f), new Vector3(.26f, 0, .83f), new Vector3(.14f, 0, .90f), new Vector3(.02f, 0, .91f) },
+            new[] { new Vector3(.14f, 0, .73f), new Vector3(.50f, 0, .73f) } };
+        static bool ClearOfPaths(Vector3 p)
+        {
+            p.y = 0;
+            if (Vector3.Distance(p, new Vector3(-.15f, 0, .12f)) < .12f || (Mathf.Abs(p.x) < .3f && p.z > .9f && p.z < 1.6f)) return false;
+            for (int k = 0; k < keepClear.Length; k++)
+                for (int i = 0; i < keepClear[k].Length - 1; i++)
+                {
+                    Vector3 a = keepClear[k][i], b = keepClear[k][i + 1];
+                    float t = Mathf.Clamp01(Vector3.Dot(p - a, b - a) / (b - a).sqrMagnitude);
+                    if (Vector3.Distance(p, a + (b - a) * t) < (k == 0 ? .2f : .1f)) return false;
+                }
+            return true;
+        }
+
+        static void GroundDressing(Transform world)
+        {
+            var ground = Group("Ground dressing - patches, leaves and flowers (combined)", world);
+            var random = new System.Random(71);
+            var blob = SaveMesh("GroundBlob", Blob(22, .28f, 3));
+            var petal = SaveMesh("PetalDisc", Blob(8, 0, 0));
+            string[] patches = { "Clover", "MossLight", "EarthPatch", "DarkMoss" };
+            for (int i = 0; i < 34; i++)
+            {
+                float a = Range(random, 0, Mathf.PI * 2), r = Mathf.Sqrt(Range(random, .02f, 1)) * 5.1f;
+                Vector3 p = new Vector3(Mathf.Cos(a) * r, .0016f + (i % 4) * .0005f, Mathf.Sin(a) * r);
+                if (OnWalkway(p)) continue;
+                float s = Range(random, .5f, 1.3f);
+                MeshShape("Soft ground patch", blob, ground, p, new Vector3(s * Range(random, .8f, 1.3f), 1, s), patches[i % 4])
+                    .localRotation = Quaternion.Euler(0, Range(random, 0, 360), 0);
+            }
+            // A worn, slightly darker edge beneath the stepping-stone path.
+            for (int i = 0; i < 12; i++)
+            {
+                float z = -.85f + i * .16f, x = Mathf.Sin(i * .7f) * .025f;
+                MeshShape("Worn path edge", blob, ground, new Vector3(x, .0007f, z), new Vector3(.36f, 1, .22f), "PathWorn");
+            }
+            string[] leafHues = { "LeafRust", "LeafGold", "LeafAmber", "LeafPlum" };
+            for (int i = 0; i < 150; i++)
+            {
+                float a = Range(random, 0, Mathf.PI * 2), r = Mathf.Sqrt(Range(random, .03f, 1)) * 5.1f;
+                Vector3 p = new Vector3(Mathf.Cos(a) * r, .002f, Mathf.Sin(a) * r);
+                if (OnWalkway(p) && i % 3 != 0) continue; // a few leaves may drift onto the paths
+                if (OnWalkway(p)) p.y = .0035f;
+                var fallen = MeshShape("Autumn fallen leaf", leafMesh, ground, p, Vector3.one * Range(random, .045f, .09f), leafHues[i % 4]);
+                fallen.localRotation = Quaternion.Euler(Range(random, -8, 8), Range(random, 0, 360), Range(random, -8, 8));
+            }
+            for (int i = 0; i < 330; i++)
+            {
+                // The first 230 gather beside the miniature routes; the rest scatter across the clearing.
+                float a = Range(random, 0, Mathf.PI * 2), r = Mathf.Sqrt(Range(random, .05f, 1)) * 5f;
+                Vector3 p = i < 230 ? new Vector3(Range(random, -.75f, .75f), 0, Range(random, -.7f, 1.2f)) : new Vector3(Mathf.Cos(a) * r, 0, Mathf.Sin(a) * r);
+                if (!ClearOfPaths(p) || (i >= 230 && OnWalkway(p))) continue;
+                float h = Range(random, .018f, .04f), turn = Range(random, 0, 360);
+                Tube("Fine green stem", ground, p, p + Vector3.up * h, .0012f, "Canopy");
+                Vector3 top = p + Vector3.up * h;
+                if (i % 3 == 0)
+                    for (int k = 0; k < 3; k++)
+                    {
+                        Vector3 o = Quaternion.Euler(0, turn + k * 120, 0) * Vector3.forward * .007f;
+                        MeshShape("Clover leaflet", petal, ground, top + o, new Vector3(.013f, 1, .011f), "Clover")
+                            .localRotation = Quaternion.Euler(-14, turn + k * 120, 0);
+                    }
+                else
+                {
+                    bool blue = i % 3 == 1;
+                    int count = blue ? 5 : 6;
+                    for (int k = 0; k < count; k++)
+                    {
+                        Vector3 o = Quaternion.Euler(0, turn + k * 360f / count, 0) * Vector3.forward * (blue ? .0058f : .0052f);
+                        MeshShape(blue ? "Forget-me-not petal" : "Buttercup petal", petal, ground, top + o + Vector3.up * (blue ? 0 : .0015f),
+                            new Vector3(blue ? .0085f : .009f, 1, blue ? .0085f : .0105f), blue ? "ForgetMeNot" : "Buttercup")
+                            .localRotation = Quaternion.Euler(blue ? -10 : -38, turn + k * 360f / count, 0);
+                    }
+                    MeshShape("Flower heart", petal, ground, top + Vector3.up * .0008f, Vector3.one * .0045f, blue ? "Buttercup" : "Gold");
+                }
+            }
+            CombineDecoration(ground, "GroundDressing");
+            foreach (var renderer in ground.GetComponentsInChildren<MeshRenderer>())
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+
+        // A flat, double-sided irregular disc (radius .5) for patches, petals and leaflets.
+        static Mesh Blob(int segments, float wobble, int seed)
+        {
+            var v = new List<Vector3> { Vector3.zero }; var t = new List<int>();
+            for (int i = 0; i < segments; i++)
+            {
+                float a = i * Mathf.PI * 2 / segments;
+                float r = .5f * (1 + wobble * (Mathf.Sin(a * 3 + seed) * .6f + Mathf.Sin(a * 5 + seed * 2.3f) * .4f));
+                v.Add(new Vector3(Mathf.Cos(a) * r, 0, Mathf.Sin(a) * r));
+                int b = i + 1, c = (i + 1) % segments + 1;
+                t.AddRange(new[] { 0, c, b, 0, b, c });
+            }
+            var mesh = new Mesh(); mesh.SetVertices(v); mesh.SetTriangles(t, 0);
+            var normals = new Vector3[v.Count]; for (int i = 0; i < normals.Length; i++) normals[i] = Vector3.up;
+            mesh.normals = normals; mesh.RecalculateBounds(); return mesh;
+        }
+
         // A gently bent, tapering trunk with a flared base and a few surface roots.
         static void TaperedTrunk(Transform parent, Vector3 foot, float height, float radius, System.Random random, string material)
         {
