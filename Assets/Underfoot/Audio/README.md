@@ -1,7 +1,7 @@
 # Original Underfoot audio
 
 - `Underfoot_Meadow_Waltz.wav`: 22.86-second lilting 6/8 tune, with a breathy flute, soft plucked strings and a restrained bass accompaniment.
-- `Underfoot_Forest_Air.wav`: 48-second stereo woodland bed of filtered wind and leaf rustle, sparse original bird calls and faint insects.
+- `Underfoot_Forest_Air.wav`: 48-second stereo woodland bed of filtered wind and leaf rustle, sparse original bird calls, faint insects and three soft synthesised evening crickets for the dusk mood.
 
 Both are original procedural compositions / sound designs made for this project, not field recordings or samples from an existing soundtrack. There are no third-party audio attribution requirements. The broad mood is a gentle, cosy countryside; no melody from the atmosphere references is used.
 

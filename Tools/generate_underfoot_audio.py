@@ -135,6 +135,22 @@ def forest():
         insect = np.sin(2 * np.pi * 3700 * local) * (.5 + .5 * np.sin(2 * np.pi * 42 * local))
         insect *= np.sin(np.pi * local / 1.2) ** 2
         place(buffer, insect, when, .009, RNG.uniform(-.7, .7))
+    # Evening crickets for the dusk mood: three soft, distant voices with their own seed,
+    # so every earlier random draw (and the music) stays exactly as before.
+    crickets = np.random.default_rng(977)
+    for pitch, pan, period, level in ((4400, -.55, .74, .015), (4750, .6, .88, .0125), (4100, .1, 1.07, .0095)):
+        pulse_t = np.arange(int(.016 * RATE)) / RATE
+        pulse = np.sin(2 * np.pi * pitch * pulse_t) * np.sin(np.pi * pulse_t / .016) ** 2
+        chirp = np.zeros(int(.13 * RATE))
+        for k in range(4):
+            start = int(k * .032 * RATE)
+            chirp[start:start + len(pulse)] += pulse * (1 - .12 * k)
+        when = crickets.uniform(0, period)
+        while when < seconds:
+            # Two whole slow swells per loop keep the seam continuous.
+            swell = .55 + .45 * np.sin(2 * np.pi * 2 * when / seconds + pitch)
+            place(buffer, chirp, when, level * swell * crickets.uniform(.8, 1.05), pan)
+            when += period * crickets.uniform(.93, 1.07)
     save("Underfoot_Forest_Air.wav", buffer, .40)
 
 
