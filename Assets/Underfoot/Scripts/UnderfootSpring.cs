@@ -90,15 +90,21 @@ namespace Underfoot
 
         void ApplyWarmth()
         {
-            for (int i = 0; i < homeLights.Length; i++) homeLights[i].intensity = Mathf.Lerp(.16f, i == 0 ? 1.4f : 1.1f, Warmth);
-            foreach (var renderer in lanternGlass)
+            // A gentle candle flicker (within about 4%) on top of the warmth the restored spring brings.
+            for (int i = 0; i < homeLights.Length; i++)
+                homeLights[i].intensity = Mathf.Lerp(.16f, i == 0 ? 1.4f : 1.1f, Warmth) * Flicker(i);
+            for (int i = 0; i < lanternGlass.Length; i++)
             {
                 Color amber = new Color(1, .68f, .27f);
                 glass.SetColor("_Color", amber * Mathf.Lerp(.36f, 1, Warmth));
-                glass.SetColor("_EmissionColor", amber * Mathf.Lerp(.025f, .8f, Warmth));
-                renderer.SetPropertyBlock(glass);
+                // HDR emission once flowing, so the storybook bloom gives the window and lantern a soft halo.
+                glass.SetColor("_EmissionColor", amber * Mathf.Lerp(.06f, 2.6f, Warmth) * Flicker(i + 3));
+                lanternGlass[i].SetPropertyBlock(glass);
             }
         }
+
+        static float Flicker(int seed) =>
+            1 + (Mathf.PerlinNoise(Time.time * 2.7f + seed * 7.31f, seed * 1.7f) - .5f) * .08f;
 
         public void ResetSpring()
         {

@@ -73,6 +73,7 @@ namespace Underfoot.Editor
             Mushroom(world, new Vector3(.89f, 0, .7f), .31f, "Hat");
             Mushroom(world, new Vector3(1.06f, 0, .6f), .19f, "Gold");
             Scatter(world);
+            LivingLight(world);
             Boundary(world);
 
             var playerObject = Group("Wanderer - player");
@@ -145,7 +146,7 @@ namespace Underfoot.Editor
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.ExponentialSquared;
             RenderSettings.fogColor = Hex(FogHex); RenderSettings.fogDensity = .072f;
             var sun = new GameObject("Low golden-hour sun", typeof(Light)).GetComponent<Light>();
-            sun.type = LightType.Directional; sun.color = Hex("FFC48C"); sun.intensity = 1.42f;
+            sun.type = LightType.Directional; sun.color = Hex("FFC995"); sun.intensity = 1.25f;
             sun.shadows = LightShadows.Soft; sun.shadowStrength = .82f; sun.shadowBias = .015f; sun.shadowNormalBias = .025f;
             sun.transform.rotation = Quaternion.Euler(14, 48, 0);
             RenderSettings.sun = sun;
@@ -185,7 +186,7 @@ namespace Underfoot.Editor
             Tube("Lantern hook", home, new Vector3(-.19f, .15f, -.09f), new Vector3(-.19f, .22f, -.09f), .006f, "Bark");
             Shape("Lantern glow", PrimitiveType.Cylinder, home, new Vector3(-.19f, .16f, -.09f), new Vector3(.035f, .024f, .035f), "WaitingAmber");
             MeshShape("Lantern cap", cap, home, new Vector3(-.19f, .185f, -.09f), new Vector3(.05f, .04f, .05f), "Bark");
-            PointLight("Lantern - warm welcome", home, new Vector3(-.16f, .14f, -.06f), .16f, .7f);
+            PointLight("Lantern - warm welcome", home, new Vector3(-.16f, .14f, -.06f), .16f, .5f);
             PointLight("Interior hearth glow", home, new Vector3(0, .16f, .28f), .16f, .48f);
             return home;
         }
