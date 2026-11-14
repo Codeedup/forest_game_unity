@@ -91,6 +91,7 @@ namespace Underfoot.Editor
             var camera = camObj.GetComponent<Camera>();
             camera.fieldOfView = 55; camera.clearFlags = CameraClearFlags.Skybox; camera.backgroundColor = Hex(FogHex);
             camera.allowHDR = true;
+            camObj.AddComponent<UnderfootStorybookGrade>().shader = AssetDatabase.LoadAssetAtPath<Shader>(Root + "/Materials/StorybookGrade.shader");
             var orbit = camObj.GetComponent<UnderfootCamera>(); orbit.player = player; player.orbit = orbit;
             orbit.Frame();
 
@@ -144,7 +145,7 @@ namespace Underfoot.Editor
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.ExponentialSquared;
             RenderSettings.fogColor = Hex(FogHex); RenderSettings.fogDensity = .072f;
             var sun = new GameObject("Low golden-hour sun", typeof(Light)).GetComponent<Light>();
-            sun.type = LightType.Directional; sun.color = Hex("FFB56E"); sun.intensity = 1.55f;
+            sun.type = LightType.Directional; sun.color = Hex("FFC48C"); sun.intensity = 1.42f;
             sun.shadows = LightShadows.Soft; sun.shadowStrength = .82f; sun.shadowBias = .015f; sun.shadowNormalBias = .025f;
             sun.transform.rotation = Quaternion.Euler(14, 48, 0);
             RenderSettings.sun = sun;

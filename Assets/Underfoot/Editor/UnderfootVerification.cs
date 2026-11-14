@@ -157,6 +157,9 @@ namespace Underfoot.Editor
             foreach (var renderer in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
                 foreach (var material in renderer.sharedMaterials)
                     if (!material || !material.shader || !material.shader.isSupported) throw new InvalidOperationException("Unsupported material on " + renderer.name);
+            var grade = p.orbit.GetComponent<UnderfootStorybookGrade>();
+            Require(grade && grade.enabled && grade.Ready && RenderSettings.skybox && RenderSettings.skybox.shader.isSupported,
+                "Dusk sky and the single storybook image effect are supported");
             Require(spring.State == UnderfootSpring.SpringState.Blocked && spring.twig.isKinematic && !sound.water.isPlaying && spring.homeLights[0].intensity < .2f,
                 "Saved opening has one lodged twig, a dry channel and a dim lantern");
             Require(!demo.gnome.Interact() && !demo.gnome.Choose(UnderfootSpring.Route.Rootway) && !spring.ClearTwig(),
