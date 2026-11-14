@@ -42,6 +42,10 @@ namespace Underfoot.Editor
             Colour("Clover", "6E9149"); Colour("MossLight", "7D9150"); Colour("EarthPatch", "806A4C"); Colour("PathWorn", "9C8661");
             Colour("LeafRust", "B4623A"); Colour("LeafGold", "D2A14A"); Colour("LeafAmber", "C47C3C"); Colour("LeafPlum", "8C5A55");
             Colour("ForgetMeNot", "86AEE8"); Colour("Buttercup", "F0C64A");
+            Colour("RootWood", "7A5236"); Colour("Ember", "FF8A3D", true); Colour("DuskGlass", "8E9AD6", true);
+            palette["Ember"].SetColor("_EmissionColor", Hex("FF8A3D") * 2.4f);
+            palette["DuskGlass"].SetColor("_EmissionColor", Hex("8E9AD6") * .7f);
+            palette["GlowHearth"] = Glow("GlowHearth", "FF9A4A", .55f, 0);
             palette["SpringWater"].SetFloat("_Glossiness", .8f);
             palette["SpringWater"].SetColor("_EmissionColor", Hex("78B9B2") * .18f);
             palette["WaitingAmber"].SetColor("_EmissionColor", Hex("806945") * .04f);
@@ -156,6 +160,7 @@ namespace Underfoot.Editor
             sun.shadows = LightShadows.Soft; sun.shadowStrength = .82f; sun.shadowBias = .015f; sun.shadowNormalBias = .025f;
             sun.transform.rotation = Quaternion.Euler(14, 48, 0);
             RenderSettings.sun = sun;
+            sun.cullingMask = ~(1 << ShelteredLayer);
         }
         const string FogHex = "5E7376";
 
@@ -186,14 +191,13 @@ namespace Underfoot.Editor
             Shape("Window cross", PrimitiveType.Cube, home, new Vector3(.15f, .13f, -.041f), new Vector3(.054f, .004f, .004f), "Wood");
             Shape("Little table", PrimitiveType.Cylinder, home, new Vector3(-.085f, .064f, .28f), new Vector3(.085f, .009f, .085f), "Wood");
             Shape("Table leg", PrimitiveType.Cylinder, home, new Vector3(-.085f, .031f, .28f), new Vector3(.016f, .031f, .016f), "Bark");
-            Shape("Tea cup", PrimitiveType.Cylinder, home, new Vector3(-.085f, .083f, .28f), new Vector3(.019f, .01f, .019f), "Cream");
-            Shape("Tea surface", PrimitiveType.Cylinder, home, new Vector3(-.085f, .094f, .28f), new Vector3(.014f, .001f, .014f), "Bark");
             Shape("Round cushion", PrimitiveType.Sphere, home, new Vector3(.075f, .018f, .29f), new Vector3(.09f, .035f, .09f), "Plum");
             Tube("Lantern hook", home, new Vector3(-.19f, .15f, -.09f), new Vector3(-.19f, .22f, -.09f), .006f, "Bark");
             Shape("Lantern glow", PrimitiveType.Cylinder, home, new Vector3(-.19f, .16f, -.09f), new Vector3(.035f, .024f, .035f), "WaitingAmber");
             MeshShape("Lantern cap", cap, home, new Vector3(-.19f, .185f, -.09f), new Vector3(.05f, .04f, .05f), "Bark");
             PointLight("Lantern - warm welcome", home, new Vector3(-.16f, .14f, -.06f), .16f, .5f);
-            PointLight("Interior hearth glow", home, new Vector3(0, .16f, .28f), .16f, .48f);
+            PointLight("Interior hearth glow", home, new Vector3(.05f, .06f, .32f), .16f, .48f);
+            HomeInterior(home);
             return home;
         }
 
@@ -708,7 +712,8 @@ namespace Underfoot.Editor
         static Mesh Footpath()
         {
             var v = new List<Vector3>(); var t = new List<int>();
-            for (int i = 0; i < 16; i++)
+            // Ends beneath the welcome mat, so it never shows above the home's floorboards.
+            for (int i = 0; i < 14; i++)
             {
                 float z = -.9f + i * .16f, x = Mathf.Sin(i * .7f) * .025f;
                 float w = .12f + Mathf.Sin(i * .6f) * .018f;
