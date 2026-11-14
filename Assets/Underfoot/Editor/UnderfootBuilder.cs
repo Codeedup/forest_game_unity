@@ -586,69 +586,90 @@ namespace Underfoot.Editor
             return SavePrefab(root, "GoldenSeed");
         }
 
+        // Storybook interface: small parchment cards with a soft ink border, dark ink text, captions low on screen.
+        const string Ink = "2A1A10", SoftInk = "52391F", Parchment = "F3E6C6";
         static void UI(UnderfootDemo demo, UnderfootSoundscape soundscape)
         {
             var canvas = new GameObject("Underfoot interface", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             var scaler = canvas.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1440, 900); scaler.matchWidthOrHeight = .5f;
-            var top = Panel("Title card", canvas.transform, new Vector2(24, -22), new Vector2(390, 105), new Vector2(0, 1));
-            TextAt("UNDERFOOT", top, new Vector2(20, -10), new Vector2(350, 44), 32, "F0DEB0");
-            TextAt("A small wanderer. A world worth noticing.", top, new Vector2(21, -57), new Vector2(350, 30), 16, "D0D6B7");
-            var soundButton = Panel("Sound toggle", canvas.transform, new Vector2(24, -137), new Vector2(158, 38), new Vector2(0, 1));
+            var top = Panel("Title card", canvas.transform, new Vector2(20, -18), new Vector2(286, 62), new Vector2(0, 1));
+            TextAt("UNDERFOOT", top, new Vector2(14, -6), new Vector2(260, 32), 25, "5B2E3C").fontStyle = FontStyle.Bold;
+            TextAt("A small wanderer. A world worth noticing.", top, new Vector2(15, -37), new Vector2(262, 20), 14, SoftInk).fontStyle = FontStyle.Italic;
+            var soundButton = Panel("Sound toggle", canvas.transform, new Vector2(20, -86), new Vector2(118, 26), new Vector2(0, 1));
             var button = soundButton.gameObject.AddComponent<Button>(); button.targetGraphic = soundButton.GetComponent<Image>();
             // Persistent event survives saving/reloading the generated scene.
             UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick, soundscape.ToggleMute);
-            soundscape.soundLabel = TextAt("Sound on  [M]", soundButton, new Vector2(12, -5), new Vector2(138, 28), 16, "D0D6B7");
-            var quest = Panel("Spring objective", canvas.transform, new Vector2(24, -189), new Vector2(360, 76), new Vector2(0, 1));
-            demo.questLabel = TextAt("", quest, new Vector2(14, -9), new Vector2(332, 60), 17, "F0DEB0");
-            var size = Panel("Size card", canvas.transform, new Vector2(-24, -22), new Vector2(360, 137), new Vector2(1, 1));
-            TextAt("YOUR HEIGHT", size, new Vector2(20, -14), new Vector2(210, 26), 15, "D0D6B7");
-            demo.heightLabel = TextAt("1.70 m", size, new Vector2(235, -10), new Vector2(110, 32), 24, "F0DEB0");
-            TextAt("Tiny", size, new Vector2(20, -96), new Vector2(120, 25), 15, "D0D6B7");
-            TextAt("Human", size, new Vector2(282, -96), new Vector2(70, 25), 15, "D0D6B7");
-            var sliderObj = UIObject("Continuous size slider", size, new Vector2(26, -60), new Vector2(307, 26));
+            soundscape.soundLabel = TextAt("Sound on  [M]", soundButton, new Vector2(10, -3), new Vector2(104, 20), 14, SoftInk);
+            var quest = Panel("Spring objective", canvas.transform, new Vector2(20, -118), new Vector2(286, 54), new Vector2(0, 1));
+            demo.questLabel = TextAt("", quest, new Vector2(12, -6), new Vector2(264, 44), 15, Ink);
+            var size = Panel("Size card", canvas.transform, new Vector2(-20, -18), new Vector2(262, 88), new Vector2(1, 1));
+            TextAt("YOUR HEIGHT", size, new Vector2(14, -9), new Vector2(150, 20), 13, SoftInk).fontStyle = FontStyle.Bold;
+            demo.heightLabel = TextAt("1.70 m", size, new Vector2(160, -5), new Vector2(90, 26), 19, Ink);
+            demo.heightLabel.alignment = TextAnchor.UpperRight;
+            TextAt("Tiny", size, new Vector2(14, -65), new Vector2(80, 18), 13, SoftInk);
+            TextAt("Human", size, new Vector2(190, -65), new Vector2(60, 18), 13, SoftInk).alignment = TextAnchor.UpperRight;
+            var sliderObj = UIObject("Continuous size slider", size, new Vector2(16, -34), new Vector2(230, 28));
             var slider = sliderObj.gameObject.AddComponent<Slider>(); slider.minValue = 0; slider.maxValue = 1; slider.value = 1;
-            var track = UIObject("Track", sliderObj, new Vector2(0, -9), new Vector2(307, 7)); track.gameObject.AddComponent<Image>().color = Hex("69785D");
+            var track = UIObject("Track", sliderObj, new Vector2(0, -11), new Vector2(230, 6));
+            var trackImage = track.gameObject.AddComponent<Image>(); trackImage.color = Hex("9C8160");
+            trackImage.sprite = BuiltinSprite("UI/Skin/UISprite.psd"); trackImage.type = Image.Type.Sliced; trackImage.pixelsPerUnitMultiplier = 3;
             var handleArea = new GameObject("Handle area", typeof(RectTransform)).GetComponent<RectTransform>(); handleArea.SetParent(sliderObj, false);
-            handleArea.anchorMin = Vector2.zero; handleArea.anchorMax = Vector2.one; handleArea.offsetMin = new Vector2(8, 0); handleArea.offsetMax = new Vector2(-8, 0);
-            var handle = new GameObject("Amber handle", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>(); handle.SetParent(handleArea, false);
-            handle.sizeDelta = new Vector2(19, 27); handle.GetComponent<Image>().color = Hex("E9BE70");
-            slider.handleRect = handle; slider.targetGraphic = handle.GetComponent<Image>(); slider.navigation = new Navigation { mode = Navigation.Mode.None };
-            // The entire 26px track is clickable, in addition to the handle.
+            handleArea.anchorMin = Vector2.zero; handleArea.anchorMax = Vector2.one; handleArea.offsetMin = new Vector2(9, 0); handleArea.offsetMax = new Vector2(-9, 0);
+            // A tiny acorn handle: a round gold nut under a brown cap with a stalk.
+            var handle = new GameObject("Acorn handle", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>(); handle.SetParent(handleArea, false);
+            handle.sizeDelta = new Vector2(20, 2); // the slider stretches it to the 28px track height
+            var nut = handle.GetComponent<Image>(); nut.sprite = BuiltinSprite("UI/Skin/Knob.psd"); nut.color = Hex("E0A84E");
+            var cap = UIObject("Acorn cap", handle, new Vector2(-2, 1), new Vector2(24, 11));
+            var capImage = cap.gameObject.AddComponent<Image>(); capImage.color = Hex("6E4A2E"); capImage.raycastTarget = false;
+            capImage.sprite = BuiltinSprite("UI/Skin/UISprite.psd"); capImage.type = Image.Type.Sliced; capImage.pixelsPerUnitMultiplier = 2;
+            var stalk = UIObject("Acorn stalk", handle, new Vector2(8.5f, 6), new Vector2(3, 6));
+            var stalkImage = stalk.gameObject.AddComponent<Image>(); stalkImage.color = Hex("6E4A2E"); stalkImage.raycastTarget = false;
+            slider.handleRect = handle; slider.targetGraphic = nut; slider.navigation = new Navigation { mode = Navigation.Mode.None };
+            // The entire 28px track is clickable, in addition to the handle.
             var hit = sliderObj.gameObject.AddComponent<Image>(); hit.color = new Color(0, 0, 0, 0);
             demo.sizeSlider = slider;
-            var bottom = Panel("Controls and prompt", canvas.transform, new Vector2(0, 22), new Vector2(760, 86), new Vector2(.5f, 0));
-            demo.promptLabel = TextAt("", bottom, new Vector2(18, -12), new Vector2(725, 30), 19, "F0DEB0"); demo.promptLabel.alignment = TextAnchor.MiddleCenter;
-            var controls = TextAt("WASD  Walk   |   Right mouse drag  Look   |   E  Interact   |   R  Reset", bottom, new Vector2(18, -46), new Vector2(725, 25), 16, "D0D6B7"); controls.alignment = TextAnchor.MiddleCenter;
-            var message = Panel("Story message", canvas.transform, new Vector2(0, 123), new Vector2(650, 76), new Vector2(.5f, 0));
-            message.GetComponent<Image>().color = new Color(.12f, .16f, .11f, .72f);
-            demo.messageLabel = TextAt("", message, new Vector2(15, -7), new Vector2(620, 62), 21, "F3DBA4"); demo.messageLabel.alignment = TextAnchor.MiddleCenter;
+            var bottom = Panel("Controls and prompt", canvas.transform, new Vector2(0, 14), new Vector2(640, 52), new Vector2(.5f, 0));
+            bottom.GetComponent<Image>().color = WithAlpha(Parchment, .72f);
+            demo.promptLabel = TextAt("", bottom, new Vector2(14, -5), new Vector2(612, 24), 17, Ink); demo.promptLabel.alignment = TextAnchor.MiddleCenter;
+            var controls = TextAt("WASD  Walk   ·   Right-drag  Look   ·   E  Interact   ·   R  Reset", bottom, new Vector2(14, -29), new Vector2(612, 18), 13, SoftInk);
+            controls.alignment = TextAnchor.MiddleCenter;
+            var message = Panel("Story message", canvas.transform, new Vector2(0, 76), new Vector2(620, 62), new Vector2(.5f, 0));
+            message.GetComponent<Image>().color = WithAlpha(Parchment, .9f);
+            demo.messageLabel = TextAt("", message, new Vector2(16, -6), new Vector2(588, 50), 19, Ink); demo.messageLabel.alignment = TextAnchor.MiddleCenter;
             // Empty dialogue should leave the landscape visible.
             var visibility = message.gameObject.AddComponent<UnderfootMessagePanel>(); visibility.message = demo.messageLabel;
-            var choices = Panel("Pip route choices", canvas.transform, new Vector2(0, 214), new Vector2(650, 68), new Vector2(.5f, 0));
-            RouteButton(choices, "1  Quiet rootway", new Vector2(12, -10), demo.gnome.ChooseRootway);
-            RouteButton(choices, "2  Squirrel clearing", new Vector2(333, -10), demo.gnome.ChooseSquirrel);
+            var choices = UIObject("Pip route choices", canvas.transform, new Vector2(0, 148), new Vector2(580, 44));
+            choices.anchorMin = choices.anchorMax = choices.pivot = new Vector2(.5f, 0);
+            RouteButton(choices, "1  Quiet rootway", new Vector2(0, 0), demo.gnome.ChooseRootway);
+            RouteButton(choices, "2  Squirrel clearing", new Vector2(300, 0), demo.gnome.ChooseSquirrel);
             demo.gnome.choicePanel = choices.gameObject; choices.gameObject.SetActive(false);
             new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
         }
 
         static void RouteButton(Transform parent, string label, Vector2 position, UnityEngine.Events.UnityAction action)
         {
-            var rect = Panel(label, parent, position, new Vector2(305, 48), new Vector2(0, 1));
-            rect.GetComponent<Image>().color = Hex("526446");
+            var rect = Panel(label, parent, position, new Vector2(280, 44), new Vector2(0, 1));
+            rect.GetComponent<Image>().color = Hex("E9CF95");
+            rect.GetComponent<Outline>().effectColor = WithAlpha("7A4E2C", .9f);
             var button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = rect.GetComponent<Image>();
+            var colours = button.colors; colours.highlightedColor = Hex("FFF1CC"); colours.pressedColor = Hex("D9B672"); button.colors = colours;
             UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick, action);
-            var text = TextAt(label, rect, new Vector2(8, -4), new Vector2(289, 40), 21, "F3DBA4");
-            text.alignment = TextAnchor.MiddleCenter;
+            var text = TextAt(label, rect, new Vector2(8, -4), new Vector2(264, 36), 18, Ink);
+            text.alignment = TextAnchor.MiddleCenter; text.fontStyle = FontStyle.Bold;
         }
 
         static RectTransform Panel(string name, Transform parent, Vector2 position, Vector2 size, Vector2 anchor)
         {
             var rect = UIObject(name, parent, position, size); rect.anchorMin = rect.anchorMax = rect.pivot = anchor;
-            var image = rect.gameObject.AddComponent<Image>(); image.color = new Color(.12f, .16f, .11f, .88f);
+            var image = rect.gameObject.AddComponent<Image>(); image.color = WithAlpha(Parchment, .86f);
+            image.sprite = BuiltinSprite("UI/Skin/UISprite.psd"); image.type = Image.Type.Sliced; image.pixelsPerUnitMultiplier = 1.2f;
+            var border = rect.gameObject.AddComponent<Outline>(); border.effectColor = WithAlpha("7A5A3A", .55f); border.effectDistance = new Vector2(1.5f, -1.5f);
             return rect;
         }
+        static Sprite BuiltinSprite(string path) => AssetDatabase.GetBuiltinExtraResource<Sprite>(path);
+        static Color WithAlpha(string hex, float alpha) { var c = Hex(hex); c.a = alpha; return c; }
         static RectTransform UIObject(string name, Transform parent, Vector2 position, Vector2 size)
         {
             var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>(); rect.SetParent(parent, false);
