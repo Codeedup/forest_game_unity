@@ -37,6 +37,8 @@ namespace Underfoot.Editor
             Colour("LeafSpeckle", "9C8547"); Colour("Dew", "C5DCC3");
             Colour("SpringWater", "78B9B2", true); Colour("WaitingAmber", "806945", true);
             Colour("SquirrelFur", "B77B53"); Colour("SquirrelTail", "A46A46");
+            Colour("Canopy", "5E7A45"); Colour("CanopyLight", "A3A75A"); Colour("ForestFloor", "3A4A30");
+            Colour("FarTrunk", "3E3A3A"); Colour("FarCanopy", "34483F"); Colour("FarCanopyDeep", "2A3A3A");
             palette["SpringWater"].SetFloat("_Glossiness", .8f);
             palette["SpringWater"].SetColor("_EmissionColor", Hex("78B9B2") * .18f);
             palette["WaitingAmber"].SetColor("_EmissionColor", Hex("806945") * .04f);
@@ -211,22 +213,25 @@ namespace Underfoot.Editor
                 Tube("Moss along root", old, points[1] + Vector3.up * .12f, points[3] + Vector3.up * .06f, .046f, "DarkMoss");
             }
             Tube("Root over the hidden roof", old, new Vector3(-.30f, .31f, 1.32f), new Vector3(.31f, .33f, 1.37f), .10f, "Bark", true);
-            for (int i = 0; i < 9; i++)
-            {
-                float a = i * 2.4f;
-                Shape("Guardian leaf crown", PrimitiveType.Sphere, old, new Vector3(Mathf.Sin(a) * 1.3f, 4.5f + (i % 3) * .43f, 2.2f + Mathf.Cos(a) * 1.15f), new Vector3(2.7f, 1.7f, 2.6f), i % 2 == 0 ? "Sage" : "DarkMoss");
-            }
+            var random = new System.Random(29);
+            var canopy = Group("Woodland canopies and trunks (combined)", parent);
+            Canopy(canopy, new Vector3(.12f, 4.6f, 2.2f), 1.5f, 16, random, true);
             for (int i = 0; i < 14; i++)
             {
                 float a = i * Mathf.PI * 2 / 14;
                 Vector3 p = new Vector3(Mathf.Cos(a) * 4.6f, 0, Mathf.Sin(a) * 4.6f);
                 float h = 3 + (i % 3) * .6f;
-                Shape("Woodland trunk", PrimitiveType.Cylinder, parent, p + Vector3.up * h / 2, new Vector3(.35f, h / 2, .42f), "Bark", true);
-                Shape("Woodland crown", PrimitiveType.Sphere, parent, p + Vector3.up * h, new Vector3(2.8f, 2.1f, 2.7f), i % 2 == 0 ? "Sage" : "DarkMoss");
+                // The original trunk collider is kept exactly; only its plain cylinder is hidden.
+                Shape("Woodland trunk collider", PrimitiveType.Cylinder, parent, p + Vector3.up * h / 2, new Vector3(.35f, h / 2, .42f), "Bark", true)
+                    .GetComponent<MeshRenderer>().enabled = false;
+                TaperedTrunk(canopy, p, h + .3f, .27f, random, "Bark");
+                Canopy(canopy, p + Vector3.up * (h + .15f), 1.05f, 8, random, i % 4 == 1);
                 for (int j = 0; j < 3; j++)
-                    Shape("Soft forest understorey", PrimitiveType.Sphere, parent, p + new Vector3((j - 1) * .42f, .23f + j * .06f, -.15f),
+                    Shape("Soft forest understorey", PrimitiveType.Sphere, canopy, p + new Vector3((j - 1) * .42f, .23f + j * .06f, -.15f),
                         new Vector3(.92f, .62f, .85f), j % 2 == 0 ? "DarkMoss" : "Moss");
             }
+            CombineDecoration(canopy, "WoodlandCanopy");
+            ForestDepth(parent);
         }
 
         static void Scatter(Transform parent)

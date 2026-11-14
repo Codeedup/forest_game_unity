@@ -96,5 +96,84 @@ namespace Underfoot.Editor
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; renderer.receiveShadows = false;
             renderer.minParticleSize = 0; renderer.maxParticleSize = .5f;
         }
+
+        static float Range(System.Random random, float min, float max) => min + (float)random.NextDouble() * (max - min);
+
+        // A gently bent, tapering trunk with a flared base and a few surface roots.
+        static void TaperedTrunk(Transform parent, Vector3 foot, float height, float radius, System.Random random, string material)
+        {
+            float lean = Range(random, 0, Mathf.PI * 2);
+            Vector3 bend = new Vector3(Mathf.Cos(lean), 0, Mathf.Sin(lean)) * Range(random, .12f, .3f);
+            var points = new Vector3[5]; var radii = new float[5];
+            for (int i = 0; i < 5; i++)
+            {
+                float f = i / 4f;
+                points[i] = foot + Vector3.up * (height * f - .05f) + bend * Mathf.Sin(f * Mathf.PI * .9f);
+                radii[i] = radius * Mathf.Lerp(1.55f, .5f, Mathf.Pow(f, .7f));
+            }
+            radii[0] = radius * 1.9f;
+            MeshShape("Tapered trunk", RootMesh(points, radii), parent, Vector3.zero, Vector3.one, material);
+            for (int r = 0; r < 4; r++)
+            {
+                float a = lean + r * Mathf.PI * .5f + Range(random, -.4f, .4f);
+                Vector3 dir = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
+                Vector3[] root = { foot + dir * radius * .5f + Vector3.up * .35f, foot + dir * radius * 1.6f + Vector3.up * .07f, foot + dir * radius * 2.4f + Vector3.down * .09f };
+                MeshShape("Root flare", RootMesh(root, new[] { radius * .5f, radius * .32f, radius * .14f }), parent, Vector3.zero, Vector3.one, material);
+            }
+        }
+
+        // Layered canopy: dark clumps beneath, mid greens around, warm rim-lit clumps on top.
+        static void Canopy(Transform parent, Vector3 centre, float size, int clumps, System.Random random, bool hangingMoss)
+        {
+            for (int i = 0; i < clumps; i++)
+            {
+                float a = i * 2.39996f + Range(random, -.3f, .3f), f = (i + .5f) / clumps;
+                float ring = Mathf.Sqrt(1 - f) * size * .95f;
+                float y = Mathf.Lerp(-.25f, .9f, f) * size + Range(random, -.12f, .12f);
+                float s = size * Range(random, .85f, 1.25f) * Mathf.Lerp(1.15f, .7f, f);
+                string colour = f < .3f ? "DarkMoss" : f < .72f ? (i % 2 == 0 ? "Sage" : "Canopy") : "CanopyLight";
+                Shape("Canopy clump", PrimitiveType.Sphere, parent, centre + new Vector3(Mathf.Cos(a) * ring, y, Mathf.Sin(a) * ring),
+                    new Vector3(s * 1.25f, s * .82f, s * 1.2f), colour);
+            }
+            if (!hangingMoss) return;
+            for (int i = 0; i < 7; i++)
+            {
+                float a = i * 2.1f + Range(random, 0, .5f);
+                Vector3 top = centre + new Vector3(Mathf.Cos(a) * size * .75f, -size * .35f, Mathf.Sin(a) * size * .75f);
+                float length = Range(random, .45f, 1.0f) * size;
+                var strand = MeshShape("Hanging moss strand", cone, parent, top, new Vector3(.05f * size, length * .8f, .04f * size), "Moss");
+                strand.localRotation = Quaternion.Euler(180 + Range(random, -6, 6), Range(random, 0, 360), 0);
+            }
+        }
+
+        // Two darker rings of silhouetted trees on a fogged forest floor give the clearing depth.
+        static void ForestDepth(Transform parent)
+        {
+            var depth = Group("Forest depth - outer silhouettes (combined, no shadows)", parent);
+            Shape("Fogged forest floor", PrimitiveType.Cylinder, depth, new Vector3(0, -.045f, 0), new Vector3(40, .025f, 40), "ForestFloor");
+            var random = new System.Random(57);
+            for (int ring = 0; ring < 2; ring++)
+            {
+                int count = ring == 0 ? 17 : 23;
+                for (int i = 0; i < count; i++)
+                {
+                    float a = (i + (ring == 0 ? .5f : .2f) + Range(random, -.25f, .25f)) * Mathf.PI * 2 / count;
+                    float r = (ring == 0 ? 6.8f : 9.4f) + Range(random, -.5f, .7f);
+                    Vector3 p = new Vector3(Mathf.Cos(a) * r, 0, Mathf.Sin(a) * r);
+                    float h = Range(random, 3.4f, 5.2f) + ring * .6f;
+                    TaperedTrunk(depth, p, h, .24f + ring * .04f, random, ring == 0 ? "FarTrunk" : "FarCanopyDeep");
+                    for (int j = 0; j < 6; j++)
+                    {
+                        float b = j * 2.4f, f = (j + .5f) / 6, s = Range(random, 1.1f, 1.6f) * Mathf.Lerp(1.1f, .75f, f);
+                        Shape("Silhouette canopy clump", PrimitiveType.Sphere, depth,
+                            p + new Vector3(Mathf.Cos(b) * .8f * (1 - f), h + f * 1.1f, Mathf.Sin(b) * .8f * (1 - f)),
+                            new Vector3(s * 1.3f, s * .9f, s * 1.3f), ring == 0 ? (j % 2 == 0 ? "FarCanopy" : "DarkMoss") : "FarCanopyDeep");
+                    }
+                }
+            }
+            CombineDecoration(depth, "ForestDepth");
+            foreach (var renderer in depth.GetComponentsInChildren<MeshRenderer>())
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
     }
 }
