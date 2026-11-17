@@ -16,7 +16,7 @@ namespace Underfoot
         public Color highlightTint = new Color(1f, .92f, .8f);
         public Color shadowTint = new Color(.62f, .66f, .95f);
         [Range(-.5f, .8f)] public float saturation = .1f;
-        [Range(0, 1)] public float vignette = .38f;
+        [Range(0, 1)] public float vignette = .48f;
         public Color vignetteColour = new Color(.13f, .08f, .16f);
         Material material;
 

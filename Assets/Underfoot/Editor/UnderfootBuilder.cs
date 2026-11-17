@@ -150,29 +150,29 @@ namespace Underfoot.Editor
 
         static void Lighting()
         {
-            // Golden hour turning to dusk: a low amber sun, cool lavender fill and blue-green atmosphere.
+            // Deep dusk: a dimmer amber sun, a darker sky and fog, and a strong cool ambient fill so shadows stay readable and cosy.
             string skyPath = Root + "/Materials/DuskSky.mat";
             var sky = AssetDatabase.LoadAssetAtPath<Material>(skyPath);
             if (!sky) { sky = new Material(Shader.Find("Underfoot/Dusk Sky")); AssetDatabase.CreateAsset(sky, skyPath); }
             sky.shader = Shader.Find("Underfoot/Dusk Sky");
-            sky.SetColor("_Zenith", Hex("2E3462")); sky.SetColor("_Upper", Hex("7A73A6")); sky.SetColor("_Horizon", Hex("F2A97E"));
-            sky.SetColor("_Ground", Hex(FogHex)); sky.SetColor("_SunGlow", Hex("FFB866"));
+            sky.SetColor("_Zenith", Hex("181C3E")); sky.SetColor("_Upper", Hex("46416E")); sky.SetColor("_Horizon", Hex("C27D68"));
+            sky.SetColor("_Ground", Hex(FogHex)); sky.SetColor("_SunGlow", Hex("E39A58"));
             EditorUtility.SetDirty(sky);
             RenderSettings.skybox = sky;
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = Hex("8C88B8");
-            RenderSettings.ambientEquatorColor = Hex("B98E86");
-            RenderSettings.ambientGroundColor = Hex("3E4A33");
+            RenderSettings.ambientSkyColor = Hex("7F8CC8");
+            RenderSettings.ambientEquatorColor = Hex("9C7F9A");
+            RenderSettings.ambientGroundColor = Hex("56653F");
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.ExponentialSquared;
             RenderSettings.fogColor = Hex(FogHex); RenderSettings.fogDensity = .072f;
             var sun = new GameObject("Low golden-hour sun", typeof(Light)).GetComponent<Light>();
-            sun.type = LightType.Directional; sun.color = Hex("FFC995"); sun.intensity = 1.25f;
-            sun.shadows = LightShadows.Soft; sun.shadowStrength = .82f; sun.shadowBias = .015f; sun.shadowNormalBias = .025f;
+            sun.type = LightType.Directional; sun.color = Hex("FFB878"); sun.intensity = .62f;
+            sun.shadows = LightShadows.Soft; sun.shadowStrength = .7f; sun.shadowBias = .015f; sun.shadowNormalBias = .025f;
             sun.transform.rotation = Quaternion.Euler(14, 48, 0);
             RenderSettings.sun = sun;
             sun.cullingMask = ~(1 << ShelteredLayer);
         }
-        const string FogHex = "5E7376";
+        const string FogHex = "37484F";
 
         static Transform BuildHome(Transform parent)
         {
