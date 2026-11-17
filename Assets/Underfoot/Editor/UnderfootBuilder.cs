@@ -24,7 +24,7 @@ namespace Underfoot.Editor
             if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             foreach (string folder in new[] { "Scenes", "Materials", "Meshes", "Prefabs" }) Directory.CreateDirectory(Root + "/" + folder);
             AssetDatabase.Refresh();
-            palette.Clear();
+            palette.Clear(); modelCache.Clear();
             Colour("Moss", "65774A"); Colour("Sage", "8FA66D"); Colour("DarkMoss", "435C3B");
             Colour("Earth", "766448"); Colour("Path", "B49D73"); Colour("Bark", "634A3C"); Colour("BarkLight", "8A6B52");
             Colour("Plum", "735574"); Colour("PlumLight", "9B7895"); Colour("FaceShadow", "39313B");
@@ -245,6 +245,8 @@ namespace Underfoot.Editor
                 // The original trunk collider is kept exactly; only its plain cylinder is hidden.
                 Shape("Woodland trunk collider", PrimitiveType.Cylinder, parent, p + Vector3.up * h / 2, new Vector3(.35f, h / 2, .42f), "Bark", true)
                     .GetComponent<MeshRenderer>().enabled = false;
+                var tree = PlaceModel("Tree", parent, p, h + 1.3f, i * 47f);
+                if (tree) { tree.name = "Woodland tree"; continue; }
                 TaperedTrunk(canopy, p, h + .3f, .27f, random, "Bark");
                 Canopy(canopy, p + Vector3.up * (h + .15f), 1.05f, 8, random, i % 4 == 1);
                 for (int j = 0; j < 3; j++)
@@ -264,6 +266,7 @@ namespace Underfoot.Editor
                 float radius = 1.45f + (float)random.NextDouble() * 3.6f;
                 Vector3 p = new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
                 if (i % 4 == 0) Shape("Soft woodland stone", PrimitiveType.Sphere, parent, p, new Vector3(.28f, .15f, .22f), "Stone", true);
+                else if (PlaceModel("Grass", parent, p, .3f, i * 51f) is Transform grass) grass.name = "Grass tuft";
                 else
                     for (int j = 0; j < 3; j++)
                     {
@@ -288,6 +291,7 @@ namespace Underfoot.Editor
 
         static Transform Character(Transform parent, bool gnome, out Transform[] feet, out Transform[] arms, out Transform hand)
         {
+            if (TryCharacterModel(parent, gnome, out var model, out feet, out arms, out hand)) return model;
             var body = Group(gnome ? "Friendly gnome model" : "Hooded wanderer model", parent);
             MeshShape("Bell-shaped coat", cloak, body, new Vector3(0, .13f, 0), new Vector3(.84f, .57f, .70f), gnome ? "Coat" : "Plum");
             if (!gnome) MeshShape("Cloak shoulder layer", cloak, body, new Vector3(0, .49f, 0), new Vector3(.79f, .24f, .73f), "PlumLight");
@@ -365,7 +369,15 @@ namespace Underfoot.Editor
 
         static void Mushroom(Transform parent, Vector3 position, float height, string colour)
         {
-            var mushroom = Group("Woodland mushroom", parent); mushroom.localPosition = position;
+            var mushroom = PlaceModel("Mushroom", parent, position, height, Mathf.Repeat(position.x * 197 + position.z * 71, 360));
+            if (mushroom) mushroom.name = "Woodland mushroom";
+            else { mushroom = Group("Woodland mushroom", parent); mushroom.localPosition = position; ProceduralMushroom(mushroom, height, colour); }
+            var collider = mushroom.gameObject.AddComponent<CapsuleCollider>();
+            collider.height = height; collider.radius = height * .19f; collider.center = Vector3.up * height * .5f;
+        }
+
+        static void ProceduralMushroom(Transform mushroom, float height, string colour)
+        {
             Shape("Cream stem", PrimitiveType.Capsule, mushroom, new Vector3(0, height * .4f, 0), new Vector3(height * .21f, height * .4f, height * .21f), "Cream");
             MeshShape("Scalloped cap", cap, mushroom, new Vector3(0, height * .67f, 0), new Vector3(height, height * .55f, height), colour);
             for (int i = 0; i < 6; i++)
@@ -373,8 +385,6 @@ namespace Underfoot.Editor
                 float a = i * Mathf.PI / 3;
                 Shape("Cream cap spot", PrimitiveType.Sphere, mushroom, new Vector3(Mathf.Cos(a) * height * .27f, height * .91f, Mathf.Sin(a) * height * .27f), new Vector3(height * .12f, height * .025f, height * .09f), "Cream");
             }
-            var collider = mushroom.gameObject.AddComponent<CapsuleCollider>();
-            collider.height = height; collider.radius = height * .19f; collider.center = Vector3.up * height * .5f;
         }
 
         static GameObject MossPrefab()

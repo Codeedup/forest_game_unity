@@ -180,6 +180,13 @@ namespace Underfoot.Editor
 
         static UnderfootSquirrel Squirrel(Transform parent)
         {
+            var imported = PlaceModel("Squirrel", parent, Vector3.zero, .38f);
+            if (imported)
+            {
+                imported.name = "Hazel - curious woodland squirrel";
+                var custom = imported.gameObject.AddComponent<UnderfootSquirrel>(); custom.tail = Pivot(imported, "Tail");
+                return custom;
+            }
             var animal = Group("Hazel - curious woodland squirrel", parent);
             // Soft pear-shaped body: a round haunch, a smaller chest and a pale belly.
             Shape("Round russet haunch", PrimitiveType.Sphere, animal, new Vector3(0, .085f, -.012f), new Vector3(.155f, .16f, .175f), "SquirrelFur");
